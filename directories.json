@@ -1,0 +1,12 @@
+{
+    "behavior_pack" : {
+        "blocks" : {}
+    },
+    "resource_pack" : {
+        "texts": {},
+        "textures" : {
+            "blocks" : {},
+            "items" : {}
+        }
+    }
+}
