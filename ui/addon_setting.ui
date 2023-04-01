@@ -133,7 +133,10 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="choose_version"/>
+         <widget class="QComboBox" name="choose_main_version"/>
+        </item>
+        <item>
+         <widget class="QComboBox" name="choose_detailed_version"/>
         </item>
        </layout>
       </item>

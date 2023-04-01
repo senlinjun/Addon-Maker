@@ -232,14 +232,13 @@ class BedrockAddon:
             directories = json.load(f)
         buildDirectories(f"./works/{self.packname}", directories)
 
-
 if __name__ == "__main__":
     test = BedrockAddon()
     test.new("./works", 2, "packName", "packIntroduce", "namespace")
-    b = Block(test)
-    test.blocks.append(b)
-    b.new(test.namespace, "newBlock")
-    b.setName("NewBlock")
-    test.resourcePack.addBlockTexture("./texture.png")
-    b.setResourceData("texture_id", 1, "sound", True)
+    # b = Block(test)
+    # test.blocks.append(b)
+    # b.new(test.namespace, "newBlock")
+    # b.setName("NewBlock")
+    # test.resourcePack.addBlockTexture("./texture.png")
+    # b.setResourceData("texture_id", 1, "sound", True)
     test.save()
