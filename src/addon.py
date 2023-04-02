@@ -1,5 +1,5 @@
 # Bedrock
-
+import time
 import uuid
 import json
 from lib import *
@@ -10,24 +10,10 @@ class BehaviorPack:
         path = path + f"/behavior_pack"
         self.path = path
         self.addon = addon
-        self.entities = []
-        self.items = []
-        self.loot_tables = []
-        self.recipes = []
-        self.spawn_rules = []
-        self.trading = []
-        self.blocks = []
         self.pack_name = ""
         self.manifest = {}
 
     def new(self, pack_name: str, manifest: dict):
-        self.entities = []
-        self.items = []
-        self.loot_tables = []
-        self.recipes = []
-        self.spawn_rules = []
-        self.trading = []
-        self.blocks = []
         self.pack_name = pack_name
         self.manifest = manifest
 
@@ -36,12 +22,26 @@ class BehaviorPack:
             json.dump(self.manifest, f, indent=1)
 
         # Blocks
-        for block in self.addon.blocks:
-            block_identifier = block.identifier
+        for identifier in self.addon.blocks:
+            block = self.addon.blocks[identifier]
+            block_id = block.id
             block_data = block.behavior_data
             block_namespace = block.namespace
-            with open(f"{self.path}/blocks/{block_namespace}_{block_identifier}.json", "w") as f:
+            with open(f"{self.path}/blocks/{block_namespace}_{block_id}.json", "w") as f:
                 json.dump(block_data, f, indent=1)
+
+    def load(self):
+        with open(f"{self.path}/manifest.json", "r") as f:
+            self.manifest = json.load(f)
+        for file_name in os.listdir(f"{self.path}/blocks"):
+            with open(f"{self.path}/blocks/{file_name}","r") as f:
+                block_data = json.load(f)
+            id = block_data["minecraft:block"]["description"]["identifier"].split(":")[1]
+            self.addon.blocks[f"{self.addon.namespace}:{id}"] = Block(self.addon)
+            self.addon.blocks[f"{self.addon.namespace}:{id}"].namespace = self.addon.namespace
+            self.addon.blocks[f"{self.addon.namespace}:{id}"].id = id
+            self.addon.blocks[f"{self.addon.namespace}:{id}"].behavior_data = f"{self.addon.namespace}:{id}"
+            self.addon.blocks[f"{self.addon.namespace}:{id}"].behavior_data = block_data
 
 
 class ResourcePack:
@@ -87,9 +87,10 @@ class ResourcePack:
         blocks_json = {
             "format_version": "1.19.30"
         }
-        for block in self.addon.blocks:
-            blocks_json[block.blocks_key] = block.blocks_value
-            lang[f"tile.{block.namespace}:{block.identifier}.name"] = block.name
+        for identifier in self.addon.blocks:
+            block = self.addon.blocks[identifier]
+            blocks_json[block.identifier] = block.blocks_value
+            lang[f"tile.{identifier}.name"] = block.name
         with open(f"{self.path}/blocks.json", "w") as f:
             json.dump(blocks_json, f, indent=1)
 
@@ -98,25 +99,49 @@ class ResourcePack:
             for key in lang:
                 f.write(f"{key}={lang[key]}\n")
 
+    def load(self):
+        self.lang = "zh_CN"
+        with open(f"{self.path}/manifest.json", "r") as f:
+            self.manifest = json.load(f)
+
+        with open(f"{self.path}/textures/terrain_texture.json", "r") as f:
+            self.terrain_texture = json.load(f)
+
+        # Blocks
+        with open(f"{self.path}/blocks.json", "r") as f:
+            blocks_data = json.load(f)
+        for identifier in self.addon.blocks:
+            block = self.addon.blocks[identifier]
+            block.namespace_identifier = identifier
+            block.blocks_value = blocks_data[identifier]
+
+        # lang
+        with open(f"{self.path}/texts/{self.lang}.lang", "r", encoding="utf-8") as f:
+            for line in f.readlines():
+                key,value = line.split("=")
+                identifier = key.split(".")[1]
+                self.addon.blocks[identifier].name = value
+
 
 class Block:
     def __init__(self, addon):
         self.addon = addon
         self.namespace = ""
-        self.identifier = ""
+        self.id = ""
         self.behavior_data = {}
         self.blocks_value = {}
         self.name = ""
-        self.blocks_key = {}
+        self.identifier = ""
 
-    def new(self, namespace, identifier):
-        self.namespace = namespace
-        self.identifier = identifier
+    def new(self, id):
+        self.namespace = self.addon.namespace
+        self.id = id
+        self.identifier = f"{self.namespace}:{self.id}"
         self.behavior_data = {
             "format_version": "1.19.30",
             "minecraft:block": {
                 "description": {
-                    "identifier": f"{self.namespace}:{self.identifier}"
+                    "identifier": f"{self.namespace}:{self.id}"
                 },
                 "components": {
                 }
@@ -130,7 +155,7 @@ class Block:
         self.name = name
 
     def setResourceData(self, texture_id: str, brightness: int, sound: str, isotropic: bool, carried_texture_id=None):
-        self.blocks_key = f"{self.namespace}:{self.identifier}"
+        self.namespace_identifier = f"{self.namespace}:{self.id}"
         self.blocks_value = {
             "textures": texture_id,
             "isotropic": isotropic,
@@ -152,15 +177,19 @@ class BedrockAddon:
         self.packname = ""
         self.description = ""
         self.namespace = ""
-        self.blocks = []
+        self.pack_version = [1,0,0]
+        self.min_engine_version = [1,0,0]
+        self.blocks = {}
         self.path = ""
         self.behaviorPack = None
         self.resourcePack = None
 
-    def new(self, path: str, format_version: int, packname: str, description: str, namespace: str):
+    def new(self, path: str, format_version: int, packname: str, description: str, namespace: str, pack_version:list, min_engine_version:list):
         self.packname = packname
         self.description = description
         self.namespace = namespace
+        self.pack_version = pack_version
+        self.min_engine_version = min_engine_version
         path = path + f"/{packname}"
         self.path = path
 
@@ -171,12 +200,12 @@ class BedrockAddon:
         self.behaviorPack.new(
             packname,
             {
-                "format_version": format_version,
+                "format_version": 2,
                 "header": {
                     "description": description,
                     "name": packname,
                     "uuid": str(uuid.uuid4()),
-                    "version": [0, 0, 1],
+                    "version": self.pack_version,
                     "min_engine_version": [1, 19, 20]
                 },
                 "modules": [
@@ -184,13 +213,13 @@ class BedrockAddon:
                         "description": description,
                         "type": "data",
                         "uuid": str(uuid.uuid4()),
-                        "version": [0, 0, 1]
+                        "version": self.pack_version
                     }
                 ],
                 "dependencies": [
                     {
                         "uuid": resource_uuid,
-                        "version": [0, 0, 1]
+                        "version": self.pack_version
                     }
                 ]
             }
@@ -198,12 +227,12 @@ class BedrockAddon:
         self.resourcePack.new(
             packname,
             {
-                "format_version": format_version,
+                "format_version": 2,
                 "header": {
                     "description": description,
                     "name": packname,
                     "uuid": resource_uuid,
-                    "version": [0, 0, 1],
+                    "version": self.pack_version,
                     "min_engine_version": [1, 19, 20]
                 },
                 "modules": [
@@ -211,22 +240,43 @@ class BedrockAddon:
                         "description": description,
                         "type": "resources",
                         "uuid": str(uuid.uuid4()),
-                        "version": [0, 0, 1]
+                        "version": self.pack_version
                     }
                 ]
             }
         )
         self.buildDirectories()
 
-        self.blocks = []
+        self.blocks = {}
 
     def save(self):
+        data = {
+            "pack_type":"addon",
+            "modification_time":time.time(),
+            "pack_data":{
+                "name":self.packname,
+                "description":self.description,
+                "namespace":self.namespace,
+                "pack_version":self.pack_version,
+                "min_engine_version":self.min_engine_version,
+                "format_version":2
+            }
+        }
+        with open(f"./works/{self.packname}/project.json","w",encoding="utf-8") as f:
+            json.dump(data,f,indent=1)
         self.behaviorPack.save()
         self.resourcePack.save()
 
+    def load(self,path,data):
+        self.path = path + f"/{data['pack_data']['name']}"
+        self.packname, self.description, self.namespace, self.pack_version, self.min_engine_version = data["pack_data"]["name"], data["pack_data"]["description"], data["pack_data"]["namespace"], data["pack_data"]["pack_version"], data["pack_data"]["min_engine_version"]
+        self.behaviorPack = BehaviorPack(self,self.path)
+        self.resourcePack = ResourcePack(self, self.path)
+        self.behaviorPack.load()
+        self.resourcePack.load()
+        print(self.blocks)
+
     def buildDirectories(self):
-        if "works" not in os.listdir():
-            os.mkdir("works")
         os.mkdir(f"./works/{self.packname}")
         with open("./directories.json", "r") as f:
             directories = json.load(f)
@@ -234,11 +284,22 @@ class BedrockAddon:
 
 if __name__ == "__main__":
     test = BedrockAddon()
-    test.new("./works", 2, "packName", "packIntroduce", "namespace")
-    # b = Block(test)
-    # test.blocks.append(b)
-    # b.new(test.namespace, "newBlock")
-    # b.setName("NewBlock")
-    # test.resourcePack.addBlockTexture("./texture.png")
-    # b.setResourceData("texture_id", 1, "sound", True)
+    test.new("./works", 2, "packName", "packIntroduce", "namespace",[1,0,0],[1,19,30])
+    b = Block(test)
+    test.blocks["namespace:newBlock"] = b
+    b.new("newBlock")
+    b.setName("NewBlock")
+    test.resourcePack.addBlockTexture("./resources/test.png")
+    b.setResourceData("test", 1, "sand", True)
+    test.save()
+
+    test = BedrockAddon()
+    with open("./works/packName/project.json","r") as f:
+        data = json.load(f)
+    test.load("./works",data)
+    b = Block(test)
+    test.blocks["namespace:newBlock1"] = b
+    b.new("newBlock1")
+    b.setName("NewBlock1")
+    b.setResourceData("test", 1, "stone", True)
     test.save()

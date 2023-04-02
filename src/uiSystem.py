@@ -1,4 +1,5 @@
-import random, lib, sys, addon
+import os
+import random, lib, sys, addon, os
 
 from ui import start,addonUi,addon_setting
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -28,13 +29,14 @@ class StartUi(start.Ui_MainWindow,UiBasic):
         self.uiSystem = uiSystem
 
     def init(self):
-
         self.rename()
         self.bind()
+        projects = os.listdir("./works/")
+        self.recent_list.addItems(projects)
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle(_translate("Form", "Form"))
+        self.uiSystem.setWindowTitle(_translate("Form", "Start"))
         self.new_addon.setText(_translate("Form", "New Bedrock Addon"))
         self.new_mod.setText(_translate("Form", "New Java Mod"))
         self.open.setText(_translate("Form", "Open"))
@@ -43,6 +45,10 @@ class StartUi(start.Ui_MainWindow,UiBasic):
 
     def bind(self):
         self.new_addon.clicked.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
+        self.recent_list.itemClicked.connect(self.clickedRecentProject)
+
+    def clickedRecentProject(self,project):
+        print(project.text)
 
 class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def setupUi(self, uiSystem):
@@ -60,7 +66,7 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
         self.uiSystem = uiSystem
 
     def init(self):
-        self.icon_path = "./test.png"
+        self.icon_path = "resources/test.png"
         self.rename()
         self.bind()
         self.close_callback = True
@@ -77,7 +83,7 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.uiSystem.setWindowTitle(_translate("MainWindow", "Setting Addon"))
         self.description_label_2.setText(_translate("MainWindow", "description"))
         self.namespace_label.setText(_translate("MainWindow", "namespace"))
         self.random_namepace.setText(_translate("MainWindow", "random"))
@@ -120,7 +126,9 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
                 2,
                 self.packName.text(),
                 self.description.toPlainText(),
-                self.namespace_2.text()
+                self.namespace_2.text(),
+                [int(self.pack_version_0.text()),int(self.pack_version_1.text()),int(self.pack_version_2.text())],
+                [int(number) for number in self.choose_detailed_version.currentText().split(".")]
             )
             self.uiSystem.MainSystem.project_object.save()
             self.uiSystem.changeUi(AddonUi())
