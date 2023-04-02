@@ -1,5 +1,5 @@
 import os
-import random, lib, sys, addon, os
+import random, lib, sys, addon, os, json
 
 from ui import start,addonUi,addon_setting
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -31,7 +31,7 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def init(self):
         self.rename()
         self.bind()
-        projects = os.listdir("./works/")
+        projects = self.getRecentList()
         self.recent_list.addItems(projects)
 
     def rename(self):
@@ -46,9 +46,41 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def bind(self):
         self.new_addon.clicked.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
         self.recent_list.itemClicked.connect(self.clickedRecentProject)
+        self.open.clicked.connect(self.askOpenProject)
 
     def clickedRecentProject(self,project):
-        print(project.text)
+        self.openProject(f"./works/{project.text()}")
+
+    def askOpenProject(self):
+        path = QFileDialog.getExistingDirectory(self.uiSystem)
+        if path == "":
+            return
+
+        if "project.json" in os.listdir(path):
+            self.openProject(path)
+        else:
+            QMessageBox.critical(self.uiSystem,"error","Not an Addon Maker project")
+
+    def openProject(self,path):
+        with open(f"{path}/project.json","r") as f:
+            project_data = json.load(f)
+        if project_data["pack_type"] == "addon":
+            self.uiSystem.MainSystem.project_object = addon.BedrockAddon()
+            self.uiSystem.MainSystem.project_object.load(path,project_data)
+            self.uiSystem.changeUi(AddonUi())
+
+        else:
+            QMessageBox.critical(self.uiSystem,"error","We can't open this project.\n(Unsupported project)")
+
+    def getRecentList(self):
+        projects = os.listdir("./works/")
+        projects.sort(key=self.recentSortTakeKey,reverse=True)
+        return projects
+
+    def recentSortTakeKey(self,project):
+        with open(f"./works/{project}/project.json","r") as f:
+            project_data = json.load(f)
+        return project_data["modification_time"]
 
 class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def setupUi(self, uiSystem):

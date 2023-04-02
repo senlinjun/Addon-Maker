@@ -268,13 +268,12 @@ class BedrockAddon:
         self.resourcePack.save()
 
     def load(self,path,data):
-        self.path = path + f"/{data['pack_data']['name']}"
+        self.path = path
         self.packname, self.description, self.namespace, self.pack_version, self.min_engine_version = data["pack_data"]["name"], data["pack_data"]["description"], data["pack_data"]["namespace"], data["pack_data"]["pack_version"], data["pack_data"]["min_engine_version"]
         self.behaviorPack = BehaviorPack(self,self.path)
         self.resourcePack = ResourcePack(self, self.path)
         self.behaviorPack.load()
         self.resourcePack.load()
-        print(self.blocks)
 
     def buildDirectories(self):
         os.mkdir(f"./works/{self.packname}")
