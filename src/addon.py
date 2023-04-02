@@ -112,12 +112,16 @@ class ResourcePack:
             blocks_data = json.load(f)
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
-            block.namespace_identifier = identifier
+            block.identifier = identifier
             block.blocks_value = blocks_data[identifier]
 
         # lang
         with open(f"{self.path}/texts/{self.lang}.lang", "r", encoding="utf-8") as f:
             for line in f.readlines():
+                line = line.replace("\n", "")
+                line = line.replace("\r", "")
+                if line == "":
+                    continue
                 key,value = line.split("=")
                 identifier = key.split(".")[1]
                 self.addon.blocks[identifier].name = value
@@ -291,11 +295,11 @@ if __name__ == "__main__":
     test.resourcePack.addBlockTexture("./resources/test.png")
     b.setResourceData("test", 1, "sand", True)
     test.save()
-
+    input()
     test = BedrockAddon()
     with open("./works/packName/project.json","r") as f:
         data = json.load(f)
-    test.load("./works",data)
+    test.load("./works/packName",data)
     b = Block(test)
     test.blocks["namespace:newBlock1"] = b
     b.new("newBlock1")

@@ -87,6 +87,41 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         super().setupUi(uiSystem)
         self.uiSystem = uiSystem
 
+    def init(self):
+        self.rename()
+        self.bind()
+        self.updateList()
+
+    def rename(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.uiSystem.setWindowTitle(_translate("MainWindow", f"Addon({self.uiSystem.MainSystem.project_object.packname})"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.all), _translate("MainWindow", "All"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.block), _translate("MainWindow", "Block"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.item), _translate("MainWindow", "Item"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.entity), _translate("MainWindow", "Entity"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.feature), _translate("MainWindow", "Feature"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
+
+    def updateList(self):
+        self.all_list.clear()
+        self.block_list.clear()
+        self.item_list.clear()
+        self.entity_list.clear()
+        self.feature_list.clear()
+        self.recipe_list.clear()
+
+        # blocks
+        blocks_identifier = [key for key in self.uiSystem.MainSystem.project_object.blocks]
+        print(blocks_identifier)
+        blocks_identifier.sort()
+        print(blocks_identifier)
+        self.all_list.addItems([f"{identifier}({self.uiSystem.MainSystem.project_object.blocks[identifier].name})" for identifier in blocks_identifier])
+        self.block_list.addItems(blocks_identifier)
+
+
+    def bind(self):
+        pass
+
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
 
     def __init__(self,last_ui):
