@@ -159,7 +159,6 @@ class Block:
         self.name = name
 
     def setResourceData(self, texture_id: str, brightness: int, sound: str, isotropic: bool, carried_texture_id=None):
-        self.namespace_identifier = f"{self.namespace}:{self.id}"
         self.blocks_value = {
             "textures": texture_id,
             "isotropic": isotropic,

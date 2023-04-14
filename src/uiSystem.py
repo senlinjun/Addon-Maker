@@ -3,7 +3,7 @@ import random, lib, sys, addon, os, json
 
 from ui import start,addonUi,addon_setting
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication,QMainWindow, QFileDialog,QMessageBox
+from PyQt5.QtWidgets import QApplication,QMainWindow, QFileDialog,QMessageBox,QInputDialog
 from PyQt5.QtCore import QCoreApplication
 
 '''
@@ -95,12 +95,12 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
         self.uiSystem.setWindowTitle(_translate("MainWindow", f"Addon({self.uiSystem.MainSystem.project_object.packname})"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.all), _translate("MainWindow", "All"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.block), _translate("MainWindow", "Block"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.item), _translate("MainWindow", "Item"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.entity), _translate("MainWindow", "Entity"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.feature), _translate("MainWindow", "Feature"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.all), _translate("MainWindow", "All"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.block), _translate("MainWindow", "Block"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.item), _translate("MainWindow", "Item"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.entity), _translate("MainWindow", "Entity"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.feature), _translate("MainWindow", "Feature"))
+        self.component_tab.setTabText(self.component_tab.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
 
     def updateList(self):
         self.all_list.clear()
@@ -112,15 +112,41 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
 
         # blocks
         blocks_identifier = [key for key in self.uiSystem.MainSystem.project_object.blocks]
-        print(blocks_identifier)
         blocks_identifier.sort()
-        print(blocks_identifier)
-        self.all_list.addItems([f"{identifier}({self.uiSystem.MainSystem.project_object.blocks[identifier].name})" for identifier in blocks_identifier])
-        self.block_list.addItems(blocks_identifier)
-
+        self.all_list.addItems([f"[BLOCK] {identifier}" for identifier in blocks_identifier])
+        self.block_list.addItems([f"[BLOCK] {identifier}" for identifier in blocks_identifier])
 
     def bind(self):
-        pass
+        self.addItem.clicked.connect(self.addComponent)
+
+    def addComponent(self):
+        current_text = self.component_tab.tabText(self.component_tab.currentIndex())
+        if current_text == "All":
+            select = QInputDialog.getItem(self.uiSystem,"addComponent","Select the component you want to add",["Block","Item","Entity","Feature","Recipe"],current=0,editable=False)
+            if not select[1]:
+                return
+            item = select[0]
+            if item == "Block":
+                self.addComponentBlock()
+        elif current_text == "Block":
+            self.addComponentBlock()
+
+    def addComponentBlock(self):
+        new_block_input = QInputDialog.getText(self.uiSystem,"newBlock","Enter the id of the New Block")
+        if not new_block_input[1]:
+            return
+        id = new_block_input[0]
+        if id.find(" ") != -1:
+            QMessageBox.critical(self.uiSystem, "error", "Cannot contain Spaces")
+            return
+
+        print(1)
+        new_block = addon.Block(self.uiSystem.MainSystem.project_object)
+        print(1)
+        new_block.new(id)
+        self.uiSystem.MainSystem.project_object.blocks[new_block.identifier] = new_block
+        self.updateList()
+
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
 

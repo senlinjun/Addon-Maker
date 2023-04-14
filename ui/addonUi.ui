@@ -14,86 +14,163 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
-     <widget class="QSplitter" name="splitter_2">
+     <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>1</number>
-       </property>
-       <property name="tabBarAutoHide">
-        <bool>false</bool>
-       </property>
-       <widget class="QWidget" name="all">
-        <attribute name="title">
-         <string>All</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QListWidget" name="all_list"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="block">
-        <attribute name="title">
-         <string>Block</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QListWidget" name="block_list"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="item">
-        <attribute name="title">
-         <string>Item</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <item>
-          <widget class="QListWidget" name="item_list"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="entity">
-        <attribute name="title">
-         <string>Entity</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QListWidget" name="entity_list"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="feature">
-        <attribute name="title">
-         <string>Feature</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QListWidget" name="feature_list"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="recipe">
-        <attribute name="title">
-         <string>Recipe</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <item>
-          <widget class="QListWidget" name="recipe_list"/>
-         </item>
-        </layout>
-       </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <widget class="QTabWidget" name="component_tab">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <property name="tabBarAutoHide">
+           <bool>false</bool>
+          </property>
+          <widget class="QWidget" name="all">
+           <attribute name="title">
+            <string>All</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QListWidget" name="all_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="block">
+           <attribute name="title">
+            <string>Block</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QListWidget" name="block_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="item">
+           <attribute name="title">
+            <string>Item</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QListWidget" name="item_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="entity">
+           <attribute name="title">
+            <string>Entity</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QListWidget" name="entity_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="feature">
+           <attribute name="title">
+            <string>Feature</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QListWidget" name="feature_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="recipe">
+           <attribute name="title">
+            <string>Recipe</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QListWidget" name="recipe_list"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="addItem">
+            <property name="text">
+             <string>+</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="removeItem">
+            <property name="text">
+             <string>-</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <widget class="QListWidget" name="listWidget"/>
-       <widget class="QTextBrowser" name="textBrowser"/>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QTabWidget" name="data_tab">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="behavior">
+           <attribute name="title">
+            <string>behavior</string>
+           </attribute>
+           <layout class="QFormLayout" name="formLayout"/>
+          </widget>
+          <widget class="QWidget" name="resource">
+           <attribute name="title">
+            <string>resource</string>
+           </attribute>
+           <layout class="QFormLayout" name="formLayout_2"/>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
