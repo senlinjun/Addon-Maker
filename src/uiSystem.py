@@ -118,6 +118,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
 
     def bind(self):
         self.addItem.clicked.connect(self.addComponent)
+        self.removeItem.clicked.connect(self.removeComponent)
+        self.actionSave.triggered.connect(self.save)
 
     def addComponent(self):
         current_text = self.component_tab.tabText(self.component_tab.currentIndex())
@@ -140,12 +142,30 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             QMessageBox.critical(self.uiSystem, "error", "Cannot contain Spaces")
             return
 
-        print(1)
         new_block = addon.Block(self.uiSystem.MainSystem.project_object)
-        print(1)
         new_block.new(id)
         self.uiSystem.MainSystem.project_object.blocks[new_block.identifier] = new_block
         self.updateList()
+
+    def removeComponent(self):
+        component_type,component = self.getSelectComponent()
+        component.remove()
+        self.updateList()
+
+    def getSelectComponent(self):
+        '''
+        :return:
+        (type,component)
+        '''
+        tab_index = self.component_tab.currentIndex()
+        components_dict = {0:self.all_list,1:self.block_list,2:self.item_list,3:self.entity_list,4:self.feature_list,5:self.recipe_list}
+        component_text = components_dict[tab_index].currentItem().text()
+        component_type,component_identifier = component_text.split(" ")
+        if component_type == "[BLOCK]":
+            return (component_type,self.uiSystem.MainSystem.project_object.blocks[component_identifier])
+
+    def save(self):
+        self.uiSystem.MainSystem.project_object.save()
 
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):

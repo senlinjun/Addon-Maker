@@ -22,6 +22,7 @@ class BehaviorPack:
             json.dump(self.manifest, f, indent=1)
 
         # Blocks
+        clearFolder(f"{self.path}/blocks")
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
             block_id = block.id
@@ -173,6 +174,9 @@ class Block:
 
     def removeComponent(self, key):
         self.behavior_data["components"].pop(key)
+
+    def remove(self):
+        self.addon.blocks.pop(self.identifier)
 
 
 class BedrockAddon:

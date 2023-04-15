@@ -30,3 +30,14 @@ def getBedrockGameVersionsList():
         return_dict[version].append(f"{version}.0")
 
     return return_dict
+
+def clearFolder(folder_path):
+    path = os.getcwd()
+    os.chdir(folder_path)
+    for filename in os.listdir():
+        if os.path.isdir(filename):
+            clearFolder(filename)
+            os.removedirs(filename)
+        else:
+            os.remove(filename)
+    os.chdir(path)
