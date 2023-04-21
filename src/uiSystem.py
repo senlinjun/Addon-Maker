@@ -46,31 +46,10 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def bind(self):
         self.new_addon.clicked.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
         self.recent_list.itemClicked.connect(self.clickedRecentProject)
-        self.open.clicked.connect(self.askOpenProject)
+        self.open.clicked.connect(self.uiSystem.MainSystem.askOpenProject)
 
     def clickedRecentProject(self,project):
-        self.openProject(f"./works/{project.text()}")
-
-    def askOpenProject(self):
-        path = QFileDialog.getExistingDirectory(self.uiSystem)
-        if path == "":
-            return
-
-        if "project.json" in os.listdir(path):
-            self.openProject(path)
-        else:
-            QMessageBox.critical(self.uiSystem,"error","Not an Addon Maker project")
-
-    def openProject(self,path):
-        with open(f"{path}/project.json","r") as f:
-            project_data = json.load(f)
-        if project_data["pack_type"] == "addon":
-            self.uiSystem.MainSystem.project_object = addon.BedrockAddon()
-            self.uiSystem.MainSystem.project_object.load(path,project_data)
-            self.uiSystem.changeUi(AddonUi())
-
-        else:
-            QMessageBox.critical(self.uiSystem,"error","We can't open this project.\n(Unsupported project)")
+        self.uiSystem.MainSystem.openProject(f"./works/{project.text()}")
 
     def getRecentList(self):
         projects = os.listdir("./works/")
@@ -120,6 +99,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.addItem.clicked.connect(self.addComponent)
         self.removeItem.clicked.connect(self.removeComponent)
         self.actionSave.triggered.connect(self.save)
+        self.actionOpen.triggered.connect(self.uiSystem.MainSystem.askOpenProject)
+        self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
 
     def addComponent(self):
         current_text = self.component_tab.tabText(self.component_tab.currentIndex())
@@ -148,7 +129,10 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.updateList()
 
     def removeComponent(self):
-        component_type,component = self.getSelectComponent()
+        return_back = self.getSelectComponent()
+        if return_back == None:
+            return
+        component_type, component = return_back
         component.remove()
         self.updateList()
 
@@ -159,7 +143,10 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         '''
         tab_index = self.component_tab.currentIndex()
         components_dict = {0:self.all_list,1:self.block_list,2:self.item_list,3:self.entity_list,4:self.feature_list,5:self.recipe_list}
-        component_text = components_dict[tab_index].currentItem().text()
+        component = components_dict[tab_index].currentItem()
+        if component is None:
+            return None
+        component_text = component.text()
         component_type,component_identifier = component_text.split(" ")
         if component_type == "[BLOCK]":
             return (component_type,self.uiSystem.MainSystem.project_object.blocks[component_identifier])

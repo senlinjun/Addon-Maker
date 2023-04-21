@@ -155,8 +155,6 @@ class Block:
         self.blocks_value = {}
 
     def setName(self, name):
-        # tile.demo:die.name=Die
-        # self.ResourcePack.lang["lang"][f"tile.{self.namespace}:{self.identifier}.name"] = name
         self.name = name
 
     def setResourceData(self, texture_id: str, brightness: int, sound: str, isotropic: bool, carried_texture_id=None):
