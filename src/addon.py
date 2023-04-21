@@ -90,7 +90,7 @@ class ResourcePack:
         }
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
-            blocks_json[block.identifier] = block.blocks_value
+            blocks_json[block.identifier] = block.resource_data
             lang[f"tile.{identifier}.name"] = block.name
         with open(f"{self.path}/blocks.json", "w") as f:
             json.dump(blocks_json, f, indent=1)
@@ -114,7 +114,7 @@ class ResourcePack:
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
             block.identifier = identifier
-            block.blocks_value = blocks_data[identifier]
+            block.resource_data = blocks_data[identifier]
 
         # lang
         with open(f"{self.path}/texts/{self.lang}.lang", "r", encoding="utf-8") as f:
@@ -134,7 +134,7 @@ class Block:
         self.namespace = ""
         self.id = ""
         self.behavior_data = {}
-        self.blocks_value = {}
+        self.resource_data = {}
         self.name = ""
         self.identifier = ""
 
@@ -152,29 +152,47 @@ class Block:
                 }
             }
         }
-        self.blocks_value = {}
+        self.resource_data = {}
 
     def setName(self, name):
         self.name = name
 
-    def setResourceData(self, texture_id: str, brightness: int, sound: str, isotropic: bool, carried_texture_id=None):
-        self.blocks_value = {
-            "textures": texture_id,
-            "isotropic": isotropic,
-            "brightness_gamma": brightness,
-            "sound": sound
-        }
-        if carried_texture_id is not None:
-            self.blocks_value["carried_textures"] = carried_texture_id
+    def setResourceData(self, key, value):
+        self.resource_data[key] = value
 
     def addComponent(self, key, value):
-        self.behavior_data["components"][key] = value
+        self.behavior_data["minecraft:block"]["components"][key] = value
 
     def removeComponent(self, key):
-        self.behavior_data["components"].pop(key)
+        self.behavior_data["minecraft:block"]["components"].pop(key)
 
     def remove(self):
         self.addon.blocks.pop(self.identifier)
+
+    def getBehaviorData(self):
+        data = {}
+        for key in self.behavior_data["minecraft:block"]["components"]:
+            data[key] = self.behavior_data["minecraft:block"]["components"][key]
+        return data
+
+    def setBehaviorData(self,data):
+        self.behavior_data["minecraft:block"]["components"] = {}
+        for key in data:
+            self.behavior_data["minecraft:block"]["components"][key] = data[key]
+
+    def getResourceData(self):
+        data = {}
+        data["name"] = self.name
+        for key in self.resource_data:
+            data[key] = self.resource_data[key]
+
+        return data
+
+    def setResourceData(self,data):
+        self.name = data["name"]
+        data.pop(self.name)
+        for key in data:
+            self.resource_data[key] = data[key]
 
 
 class BedrockAddon:
@@ -294,7 +312,6 @@ if __name__ == "__main__":
     b.new("newBlock")
     b.setName("NewBlock")
     test.resourcePack.addBlockTexture("./resources/test.png")
-    b.setResourceData("test", 1, "sand", True)
     test.save()
     input()
     test = BedrockAddon()
@@ -305,5 +322,4 @@ if __name__ == "__main__":
     test.blocks["namespace:newBlock1"] = b
     b.new("newBlock1")
     b.setName("NewBlock1")
-    b.setResourceData("test", 1, "stone", True)
     test.save()

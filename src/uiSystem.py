@@ -69,7 +69,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def init(self):
         self.rename()
         self.bind()
-        self.updateList()
+        self.updateComponentList()
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
@@ -81,7 +81,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.component_tab.setTabText(self.component_tab.indexOf(self.feature), _translate("MainWindow", "Feature"))
         self.component_tab.setTabText(self.component_tab.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
 
-    def updateList(self):
+    def updateComponentList(self):
         self.all_list.clear()
         self.block_list.clear()
         self.item_list.clear()
@@ -101,6 +101,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.actionSave.triggered.connect(self.save)
         self.actionOpen.triggered.connect(self.uiSystem.MainSystem.askOpenProject)
         self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
+        for component_list in [self.all_list,self.block_list,self.item_list,self.entity_list,self.feature_list,self.recipe_list]:
+            component_list.itemClicked.connect(self.updateComponentData)
 
     def addComponent(self):
         current_text = self.component_tab.tabText(self.component_tab.currentIndex())
@@ -126,7 +128,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         new_block = addon.Block(self.uiSystem.MainSystem.project_object)
         new_block.new(id)
         self.uiSystem.MainSystem.project_object.blocks[new_block.identifier] = new_block
-        self.updateList()
+        self.updateComponentList()
 
     def removeComponent(self):
         return_back = self.getSelectComponent()
@@ -134,7 +136,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return
         component_type, component = return_back
         component.remove()
-        self.updateList()
+        self.updateComponentList()
 
     def getSelectComponent(self):
         '''
@@ -149,11 +151,55 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         component_text = component.text()
         component_type,component_identifier = component_text.split(" ")
         if component_type == "[BLOCK]":
-            return (component_type,self.uiSystem.MainSystem.project_object.blocks[component_identifier])
+            return component_type, self.uiSystem.MainSystem.project_object.blocks[component_identifier]
 
     def save(self):
         self.uiSystem.MainSystem.project_object.save()
 
+    def updateComponentData(self):
+        self.clearLayout(self.behavior_data_layout)
+        self.clearLayout(self.resource_data_layout)
+        component = self.getSelectComponent()
+        if component is None:
+            return
+        component_type,component = component
+        behavior_data = component.getBehaviorData()
+        for key in behavior_data:
+            self.addFormLine(key,behavior_data[key],self.behavior_data_layout,self.behavior)
+
+        resource_data = component.getResourceData()
+        for key in resource_data:
+            self.addFormLine(key, resource_data[key], self.resource_data_layout, self.resource)
+
+    def setFormLine(self,key,value,layout,tab,line):
+        label = QtWidgets.QLabel(tab)
+        label.setObjectName("label")
+        label.setText(key)
+        layout.setWidget(line, QtWidgets.QFormLayout.LabelRole, label)
+        field = None
+        if isinstance(value,str):
+            field = QtWidgets.QLineEdit(tab)
+            field.setText(value)
+        elif isinstance(value,bool):
+            field = QtWidgets.QCheckBox(tab)
+            field.setChecked(value)
+        elif isinstance(value,int):
+            field = QtWidgets.QSpinBox(tab)
+            field.setValue(value)
+        elif isinstance(value,float):
+            field = QtWidgets.QDoubleSpinBox(tab)
+            field.setValue(value)
+        if field is None:
+            return
+        layout.setWidget(line, QtWidgets.QFormLayout.FieldRole, field)
+
+    def clearLayout(self,layout):
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            item.widget().deleteLater()
+
+    def addFormLine(self,key,value,layout,tab):
+        self.setFormLine(key,value,layout,tab,layout.rowCount())
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
 

@@ -136,13 +136,13 @@
            <attribute name="title">
             <string>behavior</string>
            </attribute>
-           <layout class="QFormLayout" name="formLayout"/>
+           <layout class="QFormLayout" name="behavior_data_layout"/>
           </widget>
           <widget class="QWidget" name="resource">
            <attribute name="title">
             <string>resource</string>
            </attribute>
-           <layout class="QFormLayout" name="formLayout_2"/>
+           <layout class="QFormLayout" name="resource_data_layout"/>
           </widget>
          </widget>
         </item>
