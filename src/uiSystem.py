@@ -3,7 +3,7 @@ import random, lib, sys, addon, os, json
 
 from ui import start,addonUi,addon_setting
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication,QMainWindow, QFileDialog,QMessageBox,QInputDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog
 from PyQt5.QtCore import QCoreApplication
 
 '''
@@ -101,6 +101,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.actionSave.triggered.connect(self.save)
         self.actionOpen.triggered.connect(self.uiSystem.MainSystem.askOpenProject)
         self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
+        self.modifyComponents.clicked.connect(self.clickedModifyComponent)
         for component_list in [self.all_list,self.block_list,self.item_list,self.entity_list,self.feature_list,self.recipe_list]:
             component_list.itemClicked.connect(self.updateComponentData)
 
@@ -201,8 +202,21 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def addFormLine(self,key,value,layout,tab):
         self.setFormLine(key,value,layout,tab,layout.rowCount())
 
-class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
+    def clickedModifyComponent(self):
+        index = self.data_tab.currentIndex()
+        component = self.getSelectComponent()
+        if component is None:
+            return
+        component = component[1]
+        if index == 0:
+            dialog = AskComponents(component.getBehaviorComponents(), component.getBehaviorData(), self.uiSystem, self.updateComponentData,component.setBehaviorData)
+            dialog.show()
+        elif index == 1:
+            dialog = AskComponents(component.getResourceComponents(), component.getResourceData(), self.uiSystem, self.updateComponentData, component.setResourceData)
+            dialog.show()
 
+
+class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def __init__(self,last_ui):
         super().__init__()
         self.last_ui = last_ui
@@ -313,3 +327,116 @@ class UiSystem(QMainWindow):
         if self.ui.close_callback:
             event.ignore()
             self.ui.close()
+
+
+class AskComponents:
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.setEnabled(True)
+        Dialog.resize(670, 430)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.scrollArea = QtWidgets.QScrollArea(Dialog)
+        self.scrollArea.setWidgetResizable(False)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 620, 0))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
+        self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.verticalLayout.addWidget(self.scrollArea)
+        self.bottom = QtWidgets.QHBoxLayout()
+        self.bottom.setObjectName("bottom")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.bottom.addItem(spacerItem)
+        self.DialogButtonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.DialogButtonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.DialogButtonBox.setObjectName("DialogButtonBox")
+        self.bottom.addWidget(self.DialogButtonBox)
+        self.verticalLayout.addLayout(self.bottom)
+
+        self.retranslateUi(Dialog)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+
+    def rename(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+
+    def init(self):
+        self.setupUi(self.Dialog)
+        self.rename()
+        self.bind()
+
+        n = len(self.component_info)
+        self.scrollAreaWidgetContents.setGeometry(0,0,610,10+110*n)
+        for i in range(n):
+            component_layout = QtWidgets.QHBoxLayout()
+            component_layout.setObjectName("component_layout")
+            text = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+            text.setObjectName("text")
+            text.setText(self.component_info[i]["identifier"])
+            component_layout.addWidget(text)
+            description = QtWidgets.QTextBrowser(self.scrollAreaWidgetContents)
+            description.setObjectName("description")
+            description.setText(self.component_info[i]["description"])
+            component_layout.addWidget(description)
+            enable = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
+            enable.setObjectName("enable")
+            enable.setText("enable")
+            if self.component_info[i]["identifier"] in self.component_data:
+                enable.setChecked(True)
+            else:
+                enable.setChecked(False)
+            component_layout.addWidget(enable)
+            self.ui_boxes[self.component_info[i]["identifier"]] = (text,description,enable)
+            self.scrollAreaWidgetContents_2.addLayout(component_layout)
+
+    def __init__(self, component_info, component_data, ui_system, callback_func, set_data_func):
+        self.uiSystem = ui_system
+        self.component_info = component_info
+        self.component_data = component_data
+        self.callback_func = callback_func
+        self.set_data_func = set_data_func
+        self.back_data = None
+        self.ui_boxes = {}
+        self.Dialog = QDialog(self.uiSystem)
+        self.init()
+
+    def show(self):
+        self.Dialog.show()
+
+    def close(self):
+        if self.back_data is not None:
+            self.set_data_func(self.back_data)
+            self.callback_func()
+        self.Dialog.close()
+
+    def ok(self):
+        self.back_data = {}
+        enable_component = []
+        for key in self.ui_boxes:
+            box = self.ui_boxes[key]
+            identifier = box[0].text()
+            enable = box[2].isChecked()
+            if enable:
+                enable_component.append(identifier)
+        component_info_with_key = {}
+        for component in self.component_info:
+            component_info_with_key[component["identifier"]] = component
+        for identifier in enable_component:
+            if identifier not in self.component_data:
+                self.back_data[identifier] = component_info_with_key[identifier]["default_value"]
+            elif identifier in self.component_data:
+                self.back_data[identifier] = self.component_data[identifier]
+        self.close()
+
+    def bind(self):
+        self.DialogButtonBox.accepted.connect(lambda:self.ok())
+        self.DialogButtonBox.rejected.connect(self.close)
+
+    

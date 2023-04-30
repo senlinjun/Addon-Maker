@@ -135,7 +135,7 @@ class Block:
         self.id = ""
         self.behavior_data = {}
         self.resource_data = {}
-        self.name = ""
+        self.name = None
         self.identifier = ""
 
     def new(self, id):
@@ -153,12 +153,6 @@ class Block:
             }
         }
         self.resource_data = {}
-
-    def setName(self, name):
-        self.name = name
-
-    def setResourceData(self, key, value):
-        self.resource_data[key] = value
 
     def addComponent(self, key, value):
         self.behavior_data["minecraft:block"]["components"][key] = value
@@ -182,7 +176,8 @@ class Block:
 
     def getResourceData(self):
         data = {}
-        data["name"] = self.name
+        if self.name is not None:
+            data["name"] = self.name
         for key in self.resource_data:
             data[key] = self.resource_data[key]
 
@@ -193,6 +188,26 @@ class Block:
         data.pop(self.name)
         for key in data:
             self.resource_data[key] = data[key]
+
+    def getBehaviorComponents(self):
+        components = []
+        try:
+            with open("./data/addon/BlockBehavior", "r") as f:
+                data = json.load(f)
+            components = data["components"]
+        except:
+            pass
+        return components
+
+    def getResourceComponents(self):
+        components = []
+        try:
+            with open("./data/addon/BlockResource","r") as f:
+                data = json.load(f)
+                components = data["components"]
+        except:
+            pass
+        return components
 
 
 class BedrockAddon:
