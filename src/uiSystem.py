@@ -67,6 +67,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.uiSystem = uiSystem
 
     def init(self):
+        self.component_data = {}
         self.rename()
         self.bind()
         self.updateComponentList()
@@ -140,10 +141,10 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.updateComponentList()
 
     def getSelectComponent(self):
-        '''
+        """
         :return:
-        (type,component)
-        '''
+        (type,component)/None
+        """
         tab_index = self.component_tab.currentIndex()
         components_dict = {0:self.all_list,1:self.block_list,2:self.item_list,3:self.entity_list,4:self.feature_list,5:self.recipe_list}
         component = components_dict[tab_index].currentItem()
@@ -158,6 +159,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.uiSystem.MainSystem.project_object.save()
 
     def updateComponentData(self):
+        self.component_data = {"behavior":{},"resource":{}}
         self.clearLayout(self.behavior_data_layout)
         self.clearLayout(self.resource_data_layout)
         component = self.getSelectComponent()
@@ -166,13 +168,19 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         component_type,component = component
         behavior_data = component.getBehaviorData()
         for key in behavior_data:
-            self.addFormLine(key,behavior_data[key],self.behavior_data_layout,self.behavior)
+            field = self.addFormLine(key,behavior_data[key],self.behavior_data_layout,self.behavior, self.saveComponentData)
+            if field is None:
+                continue
+            self.component_data["behavior"][key] = field
 
         resource_data = component.getResourceData()
         for key in resource_data:
-            self.addFormLine(key, resource_data[key], self.resource_data_layout, self.resource)
+            field = self.addFormLine(key,resource_data[key],self.resource_data_layout,self.resource,self.saveComponentData)
+            if field is None:
+                continue
+            self.component_data["resource"][key] = field
 
-    def setFormLine(self,key,value,layout,tab,line):
+    def setFormLine(self,key,value,layout,tab,line,func=None):
         label = QtWidgets.QLabel(tab)
         label.setObjectName("label")
         label.setText(key)
@@ -181,6 +189,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         if isinstance(value,str):
             field = QtWidgets.QLineEdit(tab)
             field.setText(value)
+            if func is not None:
+                field.textChanged.connect(func)
         elif isinstance(value,bool):
             field = QtWidgets.QCheckBox(tab)
             field.setChecked(value)
@@ -191,16 +201,17 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             field = QtWidgets.QDoubleSpinBox(tab)
             field.setValue(value)
         if field is None:
-            return
+            return None
         layout.setWidget(line, QtWidgets.QFormLayout.FieldRole, field)
+        return field
 
     def clearLayout(self,layout):
         for i in range(layout.count()):
             item = layout.itemAt(i)
             item.widget().deleteLater()
 
-    def addFormLine(self,key,value,layout,tab):
-        self.setFormLine(key,value,layout,tab,layout.rowCount())
+    def addFormLine(self,key,value,layout,tab,func=None):
+        return self.setFormLine(key,value,layout,tab,layout.rowCount(),func)
 
     def clickedModifyComponent(self):
         index = self.data_tab.currentIndex()
@@ -214,6 +225,31 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         elif index == 1:
             dialog = AskComponents(component.getResourceComponents(), component.getResourceData(), self.uiSystem, self.updateComponentData, component.setResourceData)
             dialog.show()
+
+    def saveComponentData(self):
+        component = self.getSelectComponent()
+        if component is None:
+            return
+        component = component[1]
+        behavior_components = {}
+        resource_components = {}
+        for key in self.component_data["behavior"]:
+            field = self.component_data["behavior"][key]
+            behavior_components[key] = self.getFieldValue(field)
+        for key in self.component_data["resource"]:
+            field = self.component_data["resource"][key]
+            resource_components[key] = self.getFieldValue(field)
+        component.setBehaviorData(behavior_components)
+        component.setResourceData(resource_components)
+
+    def getFieldValue(self,field):
+        if isinstance(field, QtWidgets.QLineEdit):
+            return field.text()
+        elif isinstance(field, QtWidgets.QSpinBox) or isinstance(field, QtWidgets.QDoubleSpinBox):
+            return field.value()
+        elif isinstance(field, QtWidgets.QSpinBox) or isinstance(field, QtWidgets.QCheckBox):
+            return field.isChecked()
+        return None
 
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):

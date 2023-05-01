@@ -91,7 +91,8 @@ class ResourcePack:
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
             blocks_json[block.identifier] = block.resource_data
-            lang[f"tile.{identifier}.name"] = block.name
+            if block.name is not None:
+                lang[f"tile.{identifier}.name"] = block.name
         with open(f"{self.path}/blocks.json", "w") as f:
             json.dump(blocks_json, f, indent=1)
 
@@ -184,8 +185,9 @@ class Block:
         return data
 
     def setResourceData(self,data):
-        self.name = data["name"]
-        data.pop(self.name)
+        if "name" in data:
+            self.name = data["name"]
+            data.pop(self.name)
         for key in data:
             self.resource_data[key] = data[key]
 
