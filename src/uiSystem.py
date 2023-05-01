@@ -365,7 +365,7 @@ class AskComponents:
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
-        self.Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.Dialog.setWindowTitle(_translate("Dialog", "component"))
 
     def init(self):
         self.setupUi(self.Dialog)
@@ -395,6 +395,19 @@ class AskComponents:
             component_layout.addWidget(enable)
             self.ui_boxes[self.component_info[i]["identifier"]] = (text,description,enable)
             self.scrollAreaWidgetContents_2.addLayout(component_layout)
+        if n == 0:
+            layout = QtWidgets.QHBoxLayout()
+            layout.setObjectName("layout")
+            spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+            layout.addItem(spacerItem)
+            self.scrollAreaWidgetContents.setGeometry(0, 0, 610, 120)
+            label = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+            label.setObjectName("label")
+            label.setText("There is nothing.")
+            layout.addWidget(label)
+            spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+            layout.addItem(spacerItem2)
+            self.scrollAreaWidgetContents_2.addLayout(layout)
 
     def __init__(self, component_info, component_data, ui_system, callback_func, set_data_func):
         self.uiSystem = ui_system
