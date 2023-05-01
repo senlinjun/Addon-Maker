@@ -2,6 +2,7 @@
 import time
 import uuid
 import json
+import zipfile
 from lib import *
 
 
@@ -321,22 +322,10 @@ class BedrockAddon:
             directories = json.load(f)
         buildDirectories(f"./works/{self.packname}", directories)
 
-if __name__ == "__main__":
-    test = BedrockAddon()
-    test.new("./works", 2, "packName", "packIntroduce", "namespace",[1,0,0],[1,19,30])
-    b = Block(test)
-    test.blocks["namespace:newBlock"] = b
-    b.new("newBlock")
-    b.setName("NewBlock")
-    test.resourcePack.addBlockTexture("./resources/test.png")
-    test.save()
-    input()
-    test = BedrockAddon()
-    with open("./works/packName/project.json","r") as f:
-        data = json.load(f)
-    test.load("./works/packName",data)
-    b = Block(test)
-    test.blocks["namespace:newBlock1"] = b
-    b.new("newBlock1")
-    b.setName("NewBlock1")
-    test.save()
+    def export(self,path):
+        behavior_zip = zipfile.ZipFile(f"{path}/{self.packname}-behavior.mcpack","w")
+        compressDir(self.behaviorPack.path,behavior_zip)
+        behavior_zip.close()
+        resource_zip = zipfile.ZipFile(f"{path}/{self.packname}-resource.mcpack", "w")
+        compressDir(self.resourcePack.path, resource_zip)
+        resource_zip.close()

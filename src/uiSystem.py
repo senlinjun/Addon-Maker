@@ -105,6 +105,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.modifyComponents.clicked.connect(self.clickedModifyComponent)
         for component_list in [self.all_list,self.block_list,self.item_list,self.entity_list,self.feature_list,self.recipe_list]:
             component_list.itemClicked.connect(self.updateComponentData)
+        self.actionExport.triggered.connect(self.export)
 
     def addComponent(self):
         current_text = self.component_tab.tabText(self.component_tab.currentIndex())
@@ -250,6 +251,12 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         elif isinstance(field, QtWidgets.QSpinBox) or isinstance(field, QtWidgets.QCheckBox):
             return field.isChecked()
         return None
+
+    def export(self):
+        path = QFileDialog.getExistingDirectory(self.uiSystem)
+        if path == "":
+            return
+        self.uiSystem.MainSystem.project_object.export(path)
 
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):

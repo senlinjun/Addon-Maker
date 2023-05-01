@@ -1,4 +1,5 @@
 import os, requests
+
 from lxml import etree
 
 def buildDirectories(path,directories):
@@ -41,3 +42,11 @@ def clearFolder(folder_path):
         else:
             os.remove(filename)
     os.chdir(path)
+
+
+def compressDir(dir_path, zip_obj, prefix=""):
+    for file in os.listdir(dir_path):
+        if os.path.isdir(f"{dir_path}/{file}"):
+            compressDir(f"{dir_path}/{file}", zip_obj, f"{prefix}/{file}")
+        else:
+            zip_obj.write(f"{dir_path}/{file}", f"{prefix}/{file}")
