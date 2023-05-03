@@ -222,6 +222,7 @@ class BedrockAddon:
         self.min_engine_version = [1,0,0]
         self.blocks = {}
         self.path = ""
+        self.save_path = None
         self.behaviorPack = None
         self.resourcePack = None
 
@@ -290,7 +291,7 @@ class BedrockAddon:
 
         self.blocks = {}
 
-    def save(self):
+    def saveToDir(self):
         data = {
             "pack_type":"addon",
             "modification_time":time.time(),
@@ -303,10 +304,17 @@ class BedrockAddon:
                 "format_version":2
             }
         }
-        with open(f"./works/{self.packname}/project.json","w",encoding="utf-8") as f:
+        with open(f"./tmp/{self.packname}/project.json","w",encoding="utf-8") as f:
             json.dump(data,f,indent=1)
         self.behaviorPack.save()
         self.resourcePack.save()
+
+    def save(self):
+        self.saveToDir()
+        zip = zipfile.ZipFile(self.save_path,"w")
+        compressDir(self.path,zip,self.packname)
+        zip.close()
+        clearFolder("tmp")
 
     def load(self,path,data):
         self.path = path
@@ -317,10 +325,10 @@ class BedrockAddon:
         self.resourcePack.load()
 
     def buildDirectories(self):
-        os.mkdir(f"./works/{self.packname}")
+        os.mkdir(f"./tmp/{self.packname}")
         with open("./directories.json", "r") as f:
             directories = json.load(f)
-        buildDirectories(f"./works/{self.packname}", directories)
+        buildDirectories(f"./tmp/{self.packname}", directories)
 
     def export(self,path):
         behavior_zip = zipfile.ZipFile(f"{path}/{self.packname}-behavior.mcpack","w")

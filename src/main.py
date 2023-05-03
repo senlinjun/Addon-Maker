@@ -1,4 +1,4 @@
-import uiSystem, addon, lib, sys, os, json
+import uiSystem, addon, lib, sys, os, json, zipfile
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox
 from PyQt5 import QtGui
 
@@ -17,28 +17,31 @@ class MainSystem:
         self.app.exec_()
 
     def askOpenProject(self):
-        path = QFileDialog.getExistingDirectory(self.ui)
-        if path == "":
+        file = QFileDialog.getOpenFileName(self.ui)[0]
+        if file == "":
             return
+        self.openProject(file)
 
-        if "project.json" in os.listdir(path):
-            self.openProject(path)
-        else:
-            QMessageBox.critical(self.ui,"error","Not an Addon Maker project")
-
-    def openProject(self,path):
+    def openProject(self,file):
+        zip = zipfile.ZipFile(file, "r")
+        zip.extractall("./tmp")
+        dir_name = zip.namelist()[0].split("/")[0]
+        path = f"./tmp/{dir_name}"
+        zip.close()
         with open(f"{path}/project.json","r") as f:
             project_data = json.load(f)
         if project_data["pack_type"] == "addon":
             self.project_object = addon.BedrockAddon()
+            self.project_object.save_path = file
             self.project_object.load(path,project_data)
             self.ui.changeUi(uiSystem.AddonUi())
         else:
             QMessageBox.critical(self.ui,"error","We can't open this project.\n(Unsupported project)")
+        lib.clearFolder("tmp")
 
 # Init
-if "works" not in os.listdir():
-    os.mkdir("works")
+if "tmp" not in os.listdir():
+    os.mkdir("tmp")
 
 main = MainSystem()
 main.load()

@@ -31,8 +31,8 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def init(self):
         self.rename()
         self.bind()
-        projects = self.getRecentList()
-        self.recent_list.addItems(projects)
+        img = QtGui.QPixmap("./resources/start.png")
+        self.img.setPixmap(img)
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
@@ -41,25 +41,25 @@ class StartUi(start.Ui_MainWindow,UiBasic):
         self.new_mod.setText(_translate("Form", "New Java Mod"))
         self.open.setText(_translate("Form", "Open"))
         self.setting.setText(_translate("Form", "setting"))
-        self.recent.setTitle(_translate("Form", "recent"))
 
     def bind(self):
         self.new_addon.clicked.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
-        self.recent_list.itemClicked.connect(self.clickedRecentProject)
         self.open.clicked.connect(self.uiSystem.MainSystem.askOpenProject)
 
     def clickedRecentProject(self,project):
-        self.uiSystem.MainSystem.openProject(f"./works/{project.text()}")
+        self.uiSystem.MainSystem.openProject(f"./tmp/{project.text()}")
 
     def getRecentList(self):
-        projects = os.listdir("./works/")
-        projects.sort(key=self.recentSortTakeKey,reverse=True)
-        return projects
+        # projects = os.listdir("tmp/")
+        # projects.sort(key=self.recentSortTakeKey,reverse=True)
+        # return projects
+        return []
 
     def recentSortTakeKey(self,project):
-        with open(f"./works/{project}/project.json","r") as f:
+        with open(f"tmp/{project}/project.json", "r") as f:
             project_data = json.load(f)
         return project_data["modification_time"]
+
 
 class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def setupUi(self, uiSystem):
@@ -157,6 +157,11 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return component_type, self.uiSystem.MainSystem.project_object.blocks[component_identifier]
 
     def save(self):
+        if self.uiSystem.MainSystem.project_object.save_path is None:
+            save_path = QFileDialog.getSaveFileName(self.uiSystem,filter="'amproject(*.amproject)'")[0]
+            if save_path == "":
+                return
+            self.uiSystem.MainSystem.project_object.save_path = save_path
         self.uiSystem.MainSystem.project_object.save()
 
     def updateComponentData(self):
@@ -325,7 +330,7 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
         if self.check():
             self.uiSystem.MainSystem.project_object = addon.BedrockAddon()
             self.uiSystem.MainSystem.project_object.new(
-                "./works",
+                "./tmp",
                 2,
                 self.packName.text(),
                 self.description.toPlainText(),
@@ -333,7 +338,6 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
                 [int(self.pack_version_0.text()),int(self.pack_version_1.text()),int(self.pack_version_2.text())],
                 [int(number) for number in self.choose_detailed_version.currentText().split(".")]
             )
-            self.uiSystem.MainSystem.project_object.save()
             self.uiSystem.changeUi(AddonUi())
 
     def check(self):
