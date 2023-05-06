@@ -38,12 +38,12 @@ class BehaviorPack:
         for file_name in os.listdir(f"{self.path}/blocks"):
             with open(f"{self.path}/blocks/{file_name}","r") as f:
                 block_data = json.load(f)
-            id = block_data["minecraft:block"]["description"]["identifier"].split(":")[1]
-            self.addon.blocks[f"{self.addon.namespace}:{id}"] = Block(self.addon)
-            self.addon.blocks[f"{self.addon.namespace}:{id}"].namespace = self.addon.namespace
-            self.addon.blocks[f"{self.addon.namespace}:{id}"].id = id
-            self.addon.blocks[f"{self.addon.namespace}:{id}"].behavior_data = f"{self.addon.namespace}:{id}"
-            self.addon.blocks[f"{self.addon.namespace}:{id}"].behavior_data = block_data
+            namespace,id = block_data["minecraft:block"]["description"]["identifier"].split(":")
+            self.addon.blocks[f"{namespace}:{id}"] = Block(self.addon)
+            self.addon.blocks[f"{namespace}:{id}"].namespace = namespace
+            self.addon.blocks[f"{namespace}:{id}"].id = id
+            self.addon.blocks[f"{namespace}:{id}"].behavior_data = f"{namespace}:{id}"
+            self.addon.blocks[f"{namespace}:{id}"].behavior_data = block_data
 
 
 class ResourcePack:
@@ -140,8 +140,8 @@ class Block:
         self.name = None
         self.identifier = ""
 
-    def new(self, id):
-        self.namespace = self.addon.namespace
+    def new(self, namespace, id):
+        self.namespace = namespace
         self.id = id
         self.identifier = f"{self.namespace}:{self.id}"
         self.behavior_data = {
@@ -235,6 +235,8 @@ class BedrockAddon:
         path = path + f"/{packname}"
         self.path = path
 
+        self.buildDirectories()
+
         self.behaviorPack = BehaviorPack(self, self.path)
         self.resourcePack = ResourcePack(self, self.path)
 
@@ -287,7 +289,6 @@ class BedrockAddon:
                 ]
             }
         )
-        self.buildDirectories()
 
         self.blocks = {}
 
@@ -314,7 +315,6 @@ class BedrockAddon:
         zip = zipfile.ZipFile(self.save_path,"w")
         compressDir(self.path,zip,self.packname)
         zip.close()
-        clearFolder("tmp")
 
     def load(self,path,data):
         self.path = path
@@ -337,3 +337,14 @@ class BedrockAddon:
         resource_zip = zipfile.ZipFile(f"{path}/{self.packname}-resource.mcpack", "w")
         compressDir(self.resourcePack.path, resource_zip)
         resource_zip.close()
+
+    def setPackIcon(self,path):
+        with open(path,"rb") as f:
+            img = f.read()
+        with open(f"{self.behaviorPack.path}/pack_icon.png","wb") as f:
+            f.write(img)
+        with open(f"{self.resourcePack.path}/pack_icon.png","wb") as f:
+            f.write(img)
+
+    def close(self):
+        clearFolder("tmp")

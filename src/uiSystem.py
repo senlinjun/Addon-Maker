@@ -43,22 +43,11 @@ class StartUi(start.Ui_MainWindow,UiBasic):
         self.setting.setText(_translate("Form", "setting"))
 
     def bind(self):
-        self.new_addon.clicked.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
+        self.new_addon.clicked.connect(self.addonClicked)
         self.open.clicked.connect(self.uiSystem.MainSystem.askOpenProject)
 
-    def clickedRecentProject(self,project):
-        self.uiSystem.MainSystem.openProject(f"./tmp/{project.text()}")
-
-    def getRecentList(self):
-        # projects = os.listdir("tmp/")
-        # projects.sort(key=self.recentSortTakeKey,reverse=True)
-        # return projects
-        return []
-
-    def recentSortTakeKey(self,project):
-        with open(f"tmp/{project}/project.json", "r") as f:
-            project_data = json.load(f)
-        return project_data["modification_time"]
+    def addonClicked(self):
+        self.uiSystem.changeUi(AddonSetting(self))
 
 
 class AddonUi(addonUi.Ui_MainWindow, UiBasic):
@@ -68,6 +57,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
 
     def init(self):
         self.component_data = {}
+        self.close_callback = True
         self.rename()
         self.bind()
         self.updateComponentList()
@@ -120,16 +110,17 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             self.addComponentBlock()
 
     def addComponentBlock(self):
-        new_block_input = QInputDialog.getText(self.uiSystem,"newBlock","Enter the id of the New Block")
+        new_block_input = QInputDialog.getText(self.uiSystem,"newBlock",'Enter the identifier of the New Block(example:"abc:apple")',text=f"{self.uiSystem.MainSystem.project_object.namespace}:",)
         if not new_block_input[1]:
             return
-        id = new_block_input[0]
-        if id.find(" ") != -1:
+        identifier = new_block_input[0]
+        if identifier.find(" ") != -1:
             QMessageBox.critical(self.uiSystem, "error", "Cannot contain Spaces")
             return
+        namespace,id = identifier.split(":")
 
         new_block = addon.Block(self.uiSystem.MainSystem.project_object)
-        new_block.new(id)
+        new_block.new(namespace,id)
         self.uiSystem.MainSystem.project_object.blocks[new_block.identifier] = new_block
         self.updateComponentList()
 
@@ -263,6 +254,10 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return
         self.uiSystem.MainSystem.project_object.export(path)
 
+    def close(self):
+        self.uiSystem.MainSystem.project_object.close()
+        QCoreApplication.instance().quit()
+
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def __init__(self,last_ui):
@@ -338,6 +333,7 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
                 [int(self.pack_version_0.text()),int(self.pack_version_1.text()),int(self.pack_version_2.text())],
                 [int(number) for number in self.choose_detailed_version.currentText().split(".")]
             )
+            self.uiSystem.MainSystem.project_object.setPackIcon(self.icon_path)
             self.uiSystem.changeUi(AddonUi())
 
     def check(self):

@@ -37,7 +37,6 @@ class MainSystem:
             self.ui.changeUi(uiSystem.AddonUi())
         else:
             QMessageBox.critical(self.ui,"error","We can't open this project.\n(Unsupported project)")
-        lib.clearFolder("tmp")
 
 # Init
 if "tmp" not in os.listdir():
