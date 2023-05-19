@@ -50,3 +50,14 @@ def compressDir(dir_path, zip_obj, prefix=""):
             compressDir(f"{dir_path}/{file}", zip_obj, f"{prefix}/{file}")
         else:
             zip_obj.write(f"{dir_path}/{file}", f"{prefix}/{file}")
+
+def loadLang(file_path):
+    lang = {}
+    with open(file_path,"r",encoding="utf-8") as f:
+        for line in f.readlines():
+            if "=" not in line:
+                continue
+            line = line[:-1]
+            key,value = line.split("=")
+            lang[key] = value
+        return lang

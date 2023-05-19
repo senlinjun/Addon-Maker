@@ -136,13 +136,51 @@
            <attribute name="title">
             <string>behavior</string>
            </attribute>
-           <layout class="QFormLayout" name="behavior_data_layout"/>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <widget class="QScrollArea" name="behavior_scrollArea">
+              <property name="widgetResizable">
+               <bool>false</bool>
+              </property>
+              <widget class="QWidget" name="behavior_scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>342</width>
+                 <height>582</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="behavior_layout"/>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
           <widget class="QWidget" name="resource">
            <attribute name="title">
             <string>resource</string>
            </attribute>
-           <layout class="QFormLayout" name="resource_data_layout"/>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QScrollArea" name="resource_scrollArea">
+              <property name="widgetResizable">
+               <bool>false</bool>
+              </property>
+              <widget class="QWidget" name="resource_scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>342</width>
+                 <height>582</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="resource_layout"/>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>

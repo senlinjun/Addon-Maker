@@ -18,7 +18,17 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLineEdit" name="search">
+     <property name="placeholderText">
+      <string>search</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QScrollArea" name="scrollArea">
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
      <property name="widgetResizable">
       <bool>false</bool>
      </property>
@@ -27,7 +37,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>620</width>
+        <width>650</width>
         <height>120</height>
        </rect>
       </property>
@@ -38,6 +48,13 @@
           <widget class="QLabel" name="text">
            <property name="text">
             <string>text</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="identifier">
+           <property name="text">
+            <string>identifier</string>
            </property>
           </widget>
          </item>

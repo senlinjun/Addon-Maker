@@ -4,6 +4,7 @@ import uuid
 import json
 import zipfile
 from lib import *
+from data.addon import BlockBehavior
 
 
 class BehaviorPack:
@@ -27,6 +28,7 @@ class BehaviorPack:
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
             block_id = block.id
+            block.generateBehaviorData()
             block_data = block.behavior_data
             block_namespace = block.namespace
             with open(f"{self.path}/blocks/{block_namespace}_{block_id}.json", "w") as f:
@@ -35,15 +37,26 @@ class BehaviorPack:
     def load(self):
         with open(f"{self.path}/manifest.json", "r") as f:
             self.manifest = json.load(f)
+
+        # Blocks
         for file_name in os.listdir(f"{self.path}/blocks"):
             with open(f"{self.path}/blocks/{file_name}","r") as f:
                 block_data = json.load(f)
             namespace,id = block_data["minecraft:block"]["description"]["identifier"].split(":")
             self.addon.blocks[f"{namespace}:{id}"] = Block(self.addon)
-            self.addon.blocks[f"{namespace}:{id}"].namespace = namespace
-            self.addon.blocks[f"{namespace}:{id}"].id = id
-            self.addon.blocks[f"{namespace}:{id}"].behavior_data = f"{namespace}:{id}"
-            self.addon.blocks[f"{namespace}:{id}"].behavior_data = block_data
+            block = self.addon.blocks[f"{namespace}:{id}"]
+            block.namespace = namespace
+            block.id = id
+            block.behavior_data = f"{namespace}:{id}"
+            block.behavior_data = block_data
+            for component in ["is_experimental","register_to_creative_menu"]:
+                if component in BlockBehavior.components:
+                    block.components.append(BlockBehavior.components[component]())
+            for component in block_data["minecraft:block"]["components"]:
+                if component in BlockBehavior.components:
+                    component_obj = BlockBehavior.components[component]()
+                    component_obj.parse(block_data["minecraft:block"]["components"][component])
+                    block.components.append(component_obj)
 
 
 class ResourcePack:
@@ -137,6 +150,7 @@ class Block:
         self.id = ""
         self.behavior_data = {}
         self.resource_data = {}
+        self.components = []
         self.name = None
         self.identifier = ""
 
@@ -156,65 +170,38 @@ class Block:
         }
         self.resource_data = {}
 
-    def addComponent(self, key, value):
-        self.behavior_data["minecraft:block"]["components"][key] = value
-
-    def removeComponent(self, key):
-        self.behavior_data["minecraft:block"]["components"].pop(key)
-
     def remove(self):
         self.addon.blocks.pop(self.identifier)
 
-    def getBehaviorData(self):
-        data = {}
-        for key in self.behavior_data["minecraft:block"]["components"]:
-            data[key] = self.behavior_data["minecraft:block"]["components"][key]
-        return data
+    def generateBehaviorData(self):
+        self.behavior_data = {
+            "format_version": "1.19.30",
+            "minecraft:block": {
+                "description": {
+                    "identifier": f"{self.namespace}:{self.id}"
+                },
+                "components": {
+                }
+            }
+        }
+        for component in self.components:
+            component.write(self.behavior_data)
 
-    def setBehaviorData(self,data):
-        self.behavior_data["minecraft:block"]["components"] = {}
-        for key in data:
-            self.behavior_data["minecraft:block"]["components"][key] = data[key]
 
-    def getResourceData(self):
-        data = {}
-        if self.name is not None:
-            data["name"] = self.name
-        for key in self.resource_data:
-            data[key] = self.resource_data[key]
-
-        return data
-
-    def setResourceData(self,data):
-        if "name" in data:
-            self.name = data["name"]
-            data.pop(self.name)
-        for key in data:
-            self.resource_data[key] = data[key]
+    # TODO Resource
 
     def getBehaviorComponents(self):
-        components = []
-        try:
-            with open("./data/addon/BlockBehavior", "r") as f:
-                data = json.load(f)
-            components = data["components"]
-        except:
-            pass
-        return components
-
-    def getResourceComponents(self):
-        components = []
-        try:
-            with open("./data/addon/BlockResource","r") as f:
-                data = json.load(f)
-                components = data["components"]
-        except:
-            pass
-        return components
+        back_dict = {}
+        for component in BlockBehavior.components:
+            back_dict[component] = {
+                "name":self.addon.MainSystem.lang["addon"][f"{component}_name"],
+                "description": self.addon.MainSystem.lang["addon"][f"{component}_description"],
+            }
+        return back_dict
 
 
 class BedrockAddon:
-    def __init__(self):
+    def __init__(self,MainSystem):
         self.packname = ""
         self.description = ""
         self.namespace = ""
@@ -225,6 +212,7 @@ class BedrockAddon:
         self.save_path = None
         self.behaviorPack = None
         self.resourcePack = None
+        self.MainSystem = MainSystem
 
     def new(self, path: str, format_version: int, packname: str, description: str, namespace: str, pack_version:list, min_engine_version:list):
         self.packname = packname

@@ -8,9 +8,11 @@ class MainSystem:
         self.app.setWindowIcon(QtGui.QIcon("./resources/ico.ico"))
         self.ui = uiSystem.UiSystem(self)
         self.project_object = None
+        self.lang = {}
 
     def load(self):
         self.bedrock_game_version_list = lib.getBedrockGameVersionsList()
+        self.lang["addon"] = lib.loadLang("./lang/en-us/addon.lang")
 
     def run(self):
         self.ui.show()
@@ -31,7 +33,7 @@ class MainSystem:
         with open(f"{path}/project.json","r") as f:
             project_data = json.load(f)
         if project_data["pack_type"] == "addon":
-            self.project_object = addon.BedrockAddon()
+            self.project_object = addon.BedrockAddon(self)
             self.project_object.save_path = file
             self.project_object.load(path,project_data)
             self.ui.changeUi(uiSystem.AddonUi())
