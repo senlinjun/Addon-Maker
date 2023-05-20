@@ -1,6 +1,6 @@
 import os, requests
-
 from lxml import etree
+from PyQt5 import QtWidgets
 
 def buildDirectories(path,directories):
     p = os.getcwd()
@@ -61,3 +61,16 @@ def loadLang(file_path):
             key,value = line.split("=")
             lang[key] = value
         return lang
+
+
+def getWidgetValue(widget):
+    if isinstance(widget,QtWidgets.QCheckBox):  # bool
+        return widget.isChecked()
+    if isinstance(widget,QtWidgets.QSpinBox):  # int
+        return widget.value()
+    if isinstance(widget,QtWidgets.QDoubleSpinBox):  # float
+        return widget.value()
+    if isinstance(widget,QtWidgets.QLineEdit):  # str
+        return widget.text()
+    if isinstance(widget,QtWidgets.QTextEdit):  # str
+        return widget.toPlainText()

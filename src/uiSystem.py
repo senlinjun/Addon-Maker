@@ -3,7 +3,7 @@ import random, lib, sys, addon, os, json
 
 from ui import start,addonUi,addon_setting
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog
 from PyQt5.QtCore import QCoreApplication
 
 '''
@@ -56,7 +56,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.uiSystem = uiSystem
 
     def init(self):
-        self.component_data = {}
+        self.component_ui = {}
         self.close_callback = True
         self.rename()
         self.bind()
@@ -169,60 +169,85 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         component = self.getSelectComponent()
         if component is None:
             return
+        self.component_ui = {}
         component_type,component = component
-        for component_data_obj in component.components:
+        for component_identifier in component.components:
+            component_data_obj = component.components[component_identifier]
+            ui_dict = component_data_obj.getUiDict()
             group_box = QtWidgets.QGroupBox(self.behavior_scrollAreaWidgetContents)
             group_box.setObjectName("groupBox")
             form_layout = QtWidgets.QFormLayout(group_box)
             form_layout.setObjectName("formLayout")
-            self.setComponentDataUi(group_box,form_layout,component_data_obj.getUiDict())
+            self.component_ui[component_identifier] = self.setComponentDataUi(group_box, form_layout, ui_dict, component_data_obj.identifier)
             self.behavior_layout.addWidget(group_box)
 
-    def setComponentDataUi(self,group_box,form_layout,data_dict:dict):
+    def setComponentDataUi(self,group_box,form_layout,data_dict:dict,component_identifier:str):
         count = 0
+        data_ui_dict = {}
         for key in data_dict:
             label = QtWidgets.QLabel(group_box)
             label.setObjectName("label")
             label.setText(key)
             form_layout.setWidget(count, QtWidgets.QFormLayout.LabelRole,label)
+            child = None
 
-            value = data_dict[key]
             field = None
-            if isinstance(value,dict):
+            if isinstance(data_dict[key],dict):
                 new_group_box = QtWidgets.QGroupBox(group_box)
                 new_group_box.setObjectName("groupBox")
                 new_group_box.setTitle(key)
                 new_form_layout = QtWidgets.QFormLayout(new_group_box)
                 new_form_layout.setObjectName("formLayout")
-                self.setComponentDataUi(new_group_box,new_form_layout,value)
+                child = self.setComponentDataUi(new_group_box,new_form_layout,data_dict[key],component_identifier)
                 field = new_group_box
 
-            elif isinstance(value,bool):
+            value, value_type, value_limit = data_dict[key]
+
+            if value_type == "bool":
                 field = QtWidgets.QCheckBox(group_box)
                 field.setObjectName("checkBox")
                 field.setChecked(value)
+                field.stateChanged.connect(lambda:self.componentDataChanged(field))
 
-            elif isinstance(value,int):
+            elif value_type == "int":
                 field = QtWidgets.QSpinBox(group_box)
                 field.setObjectName("spinBox")
+                if value_limit is not None:
+                    field.setMinimum(value_limit[0])
+                    field.setMaximum(value_limit[1])
                 field.setValue(value)
+                field.valueChanged.connect(lambda:self.componentDataChanged(field))
 
-            elif isinstance(value,float):
+            elif value_type == "float":
                 field = QtWidgets.QDoubleSpinBox(group_box)
                 field.setObjectName("doubleSpinBox")
+                if value_limit is not None:
+                    field.setMinimum(value_limit[0])
+                    field.setMaximum(value_limit[1])
                 field.setValue(value)
+                field.valueChanged.connect(lambda:self.componentDataChanged(field))
 
-            elif isinstance(value,str):
+            elif value_type == "str":
                 field = QtWidgets.QLineEdit(group_box)
                 field.setObjectName("lineEdit")
+                if value_limit is not None:
+                    field.setMaxLength(value_limit)
                 field.setText(value)
+                field.textChanged.connect(lambda:self.componentDataChanged(field))
 
             if field is None:
                 field = QtWidgets.QLabel(group_box)
                 field.setObjectName("label")
                 field.setText("Unsupported data type")
+
+            field.identifier = component_identifier
             form_layout.setWidget(count, QtWidgets.QFormLayout.FieldRole,field)
+            if child is None:
+                data_ui_dict[key] = field
+            else:
+                data_ui_dict[key] = child
             count += 1
+        return data_ui_dict
 
     def clearLayout(self, layout):
         item_list = list(range(layout.count()))
@@ -236,6 +261,17 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             else:
                 self.clearLayout(item)
 
+    def componentDataChanged(self,item):
+        try:
+            ui_dict = self.component_ui[item.identifier]
+            component_obj = self.getSelectComponent()
+            if component_obj is None:
+                return
+            component_data_obj = component_obj[1].components[item.identifier]
+            component_data_obj.parseFromUi(ui_dict)
+            self.updateComponentData()
+        except Exception as e:
+            print(e)
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def __init__(self,last_ui):

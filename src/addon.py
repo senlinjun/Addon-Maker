@@ -30,6 +30,7 @@ class BehaviorPack:
             block_id = block.id
             block.generateBehaviorData()
             block_data = block.behavior_data
+            print(block_data)
             block_namespace = block.namespace
             with open(f"{self.path}/blocks/{block_namespace}_{block_id}.json", "w") as f:
                 json.dump(block_data, f, indent=1)
@@ -51,12 +52,12 @@ class BehaviorPack:
             block.behavior_data = block_data
             for component in ["is_experimental","register_to_creative_menu"]:
                 if component in BlockBehavior.components:
-                    block.components.append(BlockBehavior.components[component]())
+                    block.components[component] = BlockBehavior.components[component]()
             for component in block_data["minecraft:block"]["components"]:
                 if component in BlockBehavior.components:
                     component_obj = BlockBehavior.components[component]()
                     component_obj.parse(block_data["minecraft:block"]["components"][component])
-                    block.components.append(component_obj)
+                    block.components[component] = component_obj
 
 
 class ResourcePack:
@@ -150,7 +151,7 @@ class Block:
         self.id = ""
         self.behavior_data = {}
         self.resource_data = {}
-        self.components = []
+        self.components = {}
         self.name = None
         self.identifier = ""
 
@@ -184,7 +185,8 @@ class Block:
                 }
             }
         }
-        for component in self.components:
+        for component_identifier in self.components:
+            component = self.components[component_identifier]
             component.write(self.behavior_data)
 
 

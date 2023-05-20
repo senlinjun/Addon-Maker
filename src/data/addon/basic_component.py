@@ -13,3 +13,6 @@ class BasicComponent:
 
     def getUiDict(self):
         pass
+
+    def parseFromUi(self):
+        pass
