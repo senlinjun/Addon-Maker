@@ -1,10 +1,10 @@
 import os
 import random, lib, sys, addon, os, json
 
-from ui import start,addonUi,addon_setting
+from ui import start,addonUi,addon_setting,ask_components
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog, QAbstractItemView
+from PyQt5.QtCore import QCoreApplication, Qt
 
 '''
 每个ui都必须有
@@ -36,11 +36,11 @@ class StartUi(start.Ui_MainWindow,UiBasic):
 
     def rename(self):
         _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle(_translate("Form", "Start"))
-        self.new_addon.setText(_translate("Form", "New Bedrock Addon"))
-        self.new_mod.setText(_translate("Form", "New Java Mod"))
-        self.open.setText(_translate("Form", "Open"))
-        self.setting.setText(_translate("Form", "setting"))
+        self.uiSystem.setWindowTitle("Start")
+        self.new_addon.setText("New Bedrock Addon")
+        self.new_mod.setText("New Java Mod")
+        self.open.setText("Open")
+        self.setting.setText("setting")
 
     def bind(self):
         self.new_addon.clicked.connect(self.addonClicked)
@@ -94,6 +94,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
         self.actionExport.triggered.connect(self.export)
         self.all_list.itemClicked.connect(self.updateComponentData)
+        self.modifyComponents.clicked.connect(self.clickedModifyComponent)
 
     def addComponent(self):
         current_text = self.component_tab.tabText(self.component_tab.currentIndex())
@@ -262,16 +263,36 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 self.clearLayout(item)
 
     def componentDataChanged(self,item):
-        try:
-            ui_dict = self.component_ui[item.identifier]
-            component_obj = self.getSelectComponent()
-            if component_obj is None:
-                return
-            component_data_obj = component_obj[1].components[item.identifier]
-            component_data_obj.parseFromUi(ui_dict)
-            self.updateComponentData()
-        except Exception as e:
-            print(e)
+        ui_dict = self.component_ui[item.identifier]
+        component_obj = self.getSelectComponent()
+        if component_obj is None:
+            return
+        component_data_obj = component_obj[1].components[item.identifier]
+        component_data_obj.parseFromUi(ui_dict)
+        self.updateComponentData()
+
+    def clickedModifyComponent(self):
+        component = self.getSelectComponent()
+        if component is None:
+            return
+        component_type,component = component
+
+        dialog = AskComponent(component.getBehaviorComponents(),self.modifyComponentCallback)
+        self.uiSystem.showDialog(dialog)
+        dialog.showComponents()
+
+    def modifyComponentCallback(self,component_dict):
+        component = self.getSelectComponent()
+        if component is None:
+            return
+        component_type, component = component
+        for component_data in component_dict:
+            print(component.components,component_dict[component_data],component)
+            if component_data in component.components and not component_dict[component_data]:
+                component.components.pop(component_data)
+            elif component_data not in component.components and component_dict[component_data]:
+                component.addBehaviorComponent(component_data)
+        self.updateComponentData()
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def __init__(self,last_ui):
@@ -367,6 +388,101 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
         QMessageBox.critical(self.uiSystem, "error", message)
         return False
 
+class AskComponent(UiBasic,ask_components.Ui_Dialog):
+    def __init__(self, component_dict, callback_func):
+        super().__init__()
+        self.component_dict = component_dict
+        self.callback_func = callback_func
+
+    def showComponents(self,component_dict=None):
+        if component_dict is None:
+            component_dict = self.component_dict
+
+        self.tableWidget.clear()
+        self.tableWidget.setColumnCount(3)
+        for i in range(3):
+            self.tableWidget.setHorizontalHeaderItem(i, QtWidgets.QTableWidgetItem())
+        self.tableRename()
+
+        self.component_enable_ui = {}
+        self.tableWidget.setRowCount(len(component_dict))
+        row = 0
+
+        for component_identifier in component_dict:
+            self.tableWidget.setRowHeight(row,70)
+            component_info = component_dict[component_identifier]
+            new_item = QtWidgets.QTableWidgetItem(component_info["name"])
+            new_item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            self.tableWidget.setItem(row, 0, new_item)
+            description = QtWidgets.QTextBrowser()
+            description.setObjectName("description")
+            self.tableWidget.setCellWidget(row,1,description)
+            enable = QtWidgets.QCheckBox()
+            enable.setObjectName("enable")
+            hLayout = QtWidgets.QHBoxLayout()
+            hLayout.addWidget(enable)
+            hLayout.setAlignment(enable, Qt.AlignCenter)
+            widget = QtWidgets.QWidget()
+            widget.setLayout(hLayout)
+            self.tableWidget.setCellWidget(row, 2, widget)
+
+            description.setText(component_info["description"])
+            enable.setChecked(component_info["is_checked"])
+
+            self.component_enable_ui[component_identifier] = enable
+
+            row += 1
+
+    def tableRename(self):
+        item = self.tableWidget.horizontalHeaderItem(0)
+        item.setText("name")
+        item = self.tableWidget.horizontalHeaderItem(1)
+        item.setText("description")
+        item = self.tableWidget.horizontalHeaderItem(2)
+        item.setText("enable")
+
+    def rename(self):
+        self.dialog.setWindowTitle("components")
+        self.search.setPlaceholderText("search")
+        self.tableRename()
+
+    def bind(self):
+        self.DialogButtonBox.rejected.connect(self.dialog.close)
+        # self.DialogButtonBox.accepted.connect(self.ok) # 这样写点击按钮没反应
+        self.DialogButtonBox.accepted.connect(lambda:self.ok()) # 但是这样写可以
+        self.search.textChanged.connect(self.searchTextChanged)
+
+    def ok(self):
+        component_enable = {}
+        for identifier in self.component_dict:
+            component_enable[identifier] = self.component_enable_ui[identifier].isChecked()
+        self.callback_func(component_enable)
+        self.dialog.close()
+
+    def init(self):
+        self.tableWidget.setColumnWidth(0, 100)
+        self.tableWidget.setColumnWidth(1, 440)
+        self.tableWidget.setColumnWidth(2, 10)
+        self.tableWidget.verticalHeader().hide()
+        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        self.rename()
+        self.bind()
+
+    def setupUi(self,Dialog):
+        super(AskComponent, self).setupUi(Dialog)
+        self.dialog = Dialog
+
+    def searchTextChanged(self, keyword):
+        if keyword == "":
+            self.showComponents(self.component_dict)
+            return
+        matching_components_dict = {}
+        for identifier in self.component_dict:
+            if keyword in identifier:
+                matching_components_dict[identifier] = self.component_dict[identifier]
+        self.showComponents(matching_components_dict)
+
 
 class UiSystem(QMainWindow):
     def __init__(self,MainSystem,Ui=StartUi()):
@@ -385,88 +501,8 @@ class UiSystem(QMainWindow):
             event.ignore()
             self.ui.close()
 
-
-class AskComponents:
-    def __init__(self,dialog,component_dict,callback_func):
-        self.dialog = dialog
-        self.component_dict = component_dict
-        self.callback_func = callback_func
-        self.component_enable_ui = {}
-
-    def setupUi(self):
-        Dialog = self.dialog
-        Dialog.setObjectName("Dialog")
-        Dialog.setEnabled(True)
-        Dialog.resize(670, 430)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.search = QtWidgets.QLineEdit(Dialog)
-        self.search.setObjectName("search")
-        self.verticalLayout.addWidget(self.search)
-        self.scrollArea = QtWidgets.QScrollArea(Dialog)
-        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.scrollArea.setWidgetResizable(False)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 650, 120))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.verticalLayout.addWidget(self.scrollArea)
-        self.bottom = QtWidgets.QHBoxLayout()
-        self.bottom.setObjectName("bottom")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.bottom.addItem(spacerItem)
-        self.DialogButtonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.DialogButtonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.DialogButtonBox.setObjectName("DialogButtonBox")
-        self.bottom.addWidget(self.DialogButtonBox)
-        self.verticalLayout.addLayout(self.bottom)
-
-        self.rename()
-        self.showComponents()
-        self.bind()
-
-    def showComponents(self):
-        component_dict = self.component_dict
-        self.component_enable_ui = {}
-        for component_identifier in component_dict:
-            component_info = component_dict[component_identifier]
-            component_layout = QtWidgets.QHBoxLayout()
-            component_layout.setObjectName("component_layout")
-            text = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            text.setObjectName("text")
-            component_layout.addWidget(text)
-            identifier = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            identifier.setObjectName("identifier")
-            component_layout.addWidget(identifier)
-            description = QtWidgets.QTextBrowser(self.scrollAreaWidgetContents)
-            description.setObjectName("description")
-            component_layout.addWidget(description)
-            enable = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
-            enable.setObjectName("enable")
-            component_layout.addWidget(enable)
-            self.scrollAreaWidgetContents_2.addLayout(component_layout)
-
-            text.setText(component_info["name"])
-            identifier.setText(component_identifier)
-            description.setText(component_info["description"])
-            enable.setChecked(component_info["is_checked"])
-
-            self.component_enable_ui[component_identifier] = enable
-
-    def rename(self):
-        self.dialog.setWindowTitle("components")
-        self.search.setPlaceholderText("search")
-
-    def bind(self):
-        self.DialogButtonBox.rejected.connect(self.dialog.close)
-        self.DialogButtonBox.accepted.connect(self.ok)
-
-    def ok(self):
-        component_enable = {}
-        for identifier in self.component_dict:
-            component_enable[identifier] = self.component_enable_ui[identifier].isChecked()
-        self.callback_func(component_enable)
-        self.dialog.close()
+    def showDialog(self,ui_obj):
+        dialog = QDialog(self)
+        ui_obj.setupUi(dialog)
+        ui_obj.init()
+        dialog.show()

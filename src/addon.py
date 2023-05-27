@@ -52,7 +52,7 @@ class BehaviorPack:
             block.behavior_data = block_data
             for component in ["is_experimental","register_to_creative_menu"]:
                 if component in BlockBehavior.components:
-                    block.components[component] = BlockBehavior.components[component]()
+                    block.addBehaviorComponent(component)
             for component in block_data["minecraft:block"]["components"]:
                 if component in BlockBehavior.components:
                     component_obj = BlockBehavior.components[component]()
@@ -198,9 +198,15 @@ class Block:
             back_dict[component] = {
                 "name":self.addon.MainSystem.lang["addon"][f"{component}_name"],
                 "description": self.addon.MainSystem.lang["addon"][f"{component}_description"],
+                "is_checked": component in self.components
             }
         return back_dict
 
+    def addBehaviorComponent(self,component_identifier):
+        self.components[component_identifier] = BlockBehavior.components[component_identifier]()
+
+    def removeBehaviorComponent(self,component_identifier):
+        self.components.pop(component_identifier)
 
 class BedrockAddon:
     def __init__(self,MainSystem):
