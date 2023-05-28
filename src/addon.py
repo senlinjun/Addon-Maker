@@ -322,7 +322,7 @@ class BedrockAddon:
 
     def buildDirectories(self):
         os.mkdir(f"./tmp/{self.packname}")
-        with open("./directories.json", "r") as f:
+        with open("data/addon/directories.json", "r") as f:
             directories = json.load(f)
         buildDirectories(f"./tmp/{self.packname}", directories)
 

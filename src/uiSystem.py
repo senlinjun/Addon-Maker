@@ -1,7 +1,7 @@
 import os
 import random, lib, sys, addon, os, json
 
-from ui import start,addonUi,addon_setting,ask_components
+from ui import start,addonUi,addon_setting,ask_components,setting
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog, QAbstractItemView
 from PyQt5.QtCore import QCoreApplication, Qt
@@ -12,6 +12,8 @@ init()方法
 close_callback布尔值变量
 close()方法（如果close_callback为True）
 '''
+
+
 class UiBasic:
     def __init__(self):
         self.close_callback = False
@@ -21,6 +23,7 @@ class UiBasic:
 
     def init(self):
         pass
+
 
 class StartUi(start.Ui_MainWindow,UiBasic):
 
@@ -45,6 +48,7 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def bind(self):
         self.new_addon.clicked.connect(self.addonClicked)
         self.open.clicked.connect(self.uiSystem.MainSystem.askOpenProject)
+        self.setting.clicked.connect(lambda:self.uiSystem.showDialog(Setting()))
 
     def addonClicked(self):
         self.uiSystem.changeUi(AddonSetting(self))
@@ -294,6 +298,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 component.addBehaviorComponent(component_data)
         self.updateComponentData()
 
+
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def __init__(self,last_ui):
         super().__init__()
@@ -388,7 +393,8 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
         QMessageBox.critical(self.uiSystem, "error", message)
         return False
 
-class AskComponent(UiBasic,ask_components.Ui_Dialog):
+
+class AskComponent(ask_components.Ui_Dialog,UiBasic):
     def __init__(self, component_dict, callback_func):
         super().__init__()
         self.component_dict = component_dict
@@ -469,9 +475,10 @@ class AskComponent(UiBasic,ask_components.Ui_Dialog):
         self.rename()
         self.bind()
 
-    def setupUi(self,Dialog):
+    def setupUi(self,ui_system,Dialog):
         super(AskComponent, self).setupUi(Dialog)
         self.dialog = Dialog
+        self.ui_system = ui_system
 
     def searchTextChanged(self, keyword):
         if keyword == "":
@@ -483,6 +490,51 @@ class AskComponent(UiBasic,ask_components.Ui_Dialog):
                 matching_components_dict[identifier] = self.component_dict[identifier]
         self.showComponents(matching_components_dict)
 
+
+class Setting(setting.Ui_Dialog,UiBasic):
+    def setupUi(self, ui_system,Dialog):
+        self.dialog = Dialog
+        self.ui_system = ui_system
+        super(Setting, self).setupUi(Dialog)
+
+    def rename(self):
+        self.dialog.setWindowTitle("setting")
+        self.Individuation.setTitle("Individuation")
+        self.theme_text.setText("theme")
+        self.language_text.setText("language")
+        self.Update.setTitle("Update")
+        self.c_v_text.setText("Current version")
+        self.c_v.setText("")
+        self.l_v_text.setText("Latest version")
+        self.l_v.setText("")
+        self.check_n_v.setText("Check the new version")
+        self.Other.setTitle("Other")
+        self.clear_cache.setText("ClearCache")
+
+    def bind(self):
+        self.clear_cache.clicked.connect(lambda:lib.clearFolder("tmp"))
+
+    def init(self):
+        self.language.clear()
+        self.languages = {}
+        languages = []
+        for folder in os.listdir("lang"):
+            languages_info = {}
+            self.languages[folder] = {}
+            with open(f"./lang/{folder}/language","r",encoding="utf-8") as f:
+                for line in f.readlines():
+                    line = line[:-1]
+                    if "=" not in line:
+                        continue
+                    key,value = line.split("=")
+                    languages_info[key] = value
+                    self.languages[folder][key] = value
+            languages.append(languages_info["name"])
+        self.language.addItems(languages)
+
+        self.language.setCurrentText(self.languages[self.ui_system.MainSystem.config["lang"]]["name"])
+        self.rename()
+        self.bind()
 
 class UiSystem(QMainWindow):
     def __init__(self,MainSystem,Ui=StartUi()):
@@ -503,6 +555,6 @@ class UiSystem(QMainWindow):
 
     def showDialog(self,ui_obj):
         dialog = QDialog(self)
-        ui_obj.setupUi(dialog)
+        ui_obj.setupUi(self,dialog)
         ui_obj.init()
         dialog.show()

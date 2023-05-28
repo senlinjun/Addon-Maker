@@ -9,10 +9,12 @@ class MainSystem:
         self.ui = uiSystem.UiSystem(self)
         self.project_object = None
         self.lang = {}
+        self.config = {}
 
     def load(self):
+        self.loadConfig()
         self.bedrock_game_version_list = lib.getBedrockGameVersionsList()
-        self.lang["addon"] = lib.loadLang("./lang/en-us/addon.lang")
+        self.lang["addon"] = lib.loadLang(f"./lang/{self.config['lang']}/addon.lang")
 
     def run(self):
         self.ui.show()
@@ -40,9 +42,20 @@ class MainSystem:
         else:
             QMessageBox.critical(self.ui,"error","We can't open this project.\n(Unsupported project)")
 
+    def loadConfig(self):
+        self.config = {}
+        with open("config","r") as f:
+            for line in f.readlines():
+                line = line[:-1]
+                key,value = line.split("=")
+                self.config[key] = value
+
 # Init
 if "tmp" not in os.listdir():
     os.mkdir("tmp")
+if "config" not in os.listdir():
+    with open("config","w") as f:
+        f.write("lang=en-us\n")
 
 main = MainSystem()
 main.load()
