@@ -1,8 +1,7 @@
-import os
-import random, lib, sys, addon, os, json
-
+import random, lib, addon
+from os import listdir
 from ui import start,addonUi,addon_setting,ask_components,setting
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog, QAbstractItemView
 from PyQt5.QtCore import QCoreApplication, Qt
 
@@ -38,12 +37,16 @@ class StartUi(start.Ui_MainWindow,UiBasic):
         self.img.setPixmap(img)
 
     def rename(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle("Start")
-        self.new_addon.setText("New Bedrock Addon")
-        self.new_mod.setText("New Java Mod")
-        self.open.setText("Open")
-        self.setting.setText("setting")
+        self.uiSystem.setWindowTitle(self.uiSystem.MainSystem.lang["ui","start_title"])
+        self.new_addon.setText(
+            f'{self.uiSystem.MainSystem.lang["ui","new"]} {self.uiSystem.MainSystem.lang["ui","bedrock_addon"]}'
+        )
+        self.new_mod.setText(
+            f'{self.uiSystem.MainSystem.lang["ui","new"]} {self.uiSystem.MainSystem.lang["ui","java_mod"]}'
+        )
+        self.open.setText(self.uiSystem.MainSystem.lang["ui","open"])
+        self.setting.setText(self.uiSystem.MainSystem.lang["ui","setting_title"])
+        self.notice_box.setTitle(self.uiSystem.MainSystem.lang["ui","notice"])
 
     def bind(self):
         self.new_addon.clicked.connect(self.addonClicked)
@@ -64,19 +67,30 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.close_callback = True
         self.rename()
         self.bind()
-        self.updateComponentList()
+        self.updateContentList()
 
     def rename(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle(_translate("MainWindow", f"Addon({self.uiSystem.MainSystem.project_object.packname})"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.all), _translate("MainWindow", "All"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.block), _translate("MainWindow", "Block"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.item), _translate("MainWindow", "Item"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.entity), _translate("MainWindow", "Entity"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.feature), _translate("MainWindow", "Feature"))
-        self.component_tab.setTabText(self.component_tab.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
+            self.uiSystem.setWindowTitle(f'{self.uiSystem.MainSystem.lang["ui","addon"]}({self.uiSystem.MainSystem.project_object.packname})')
+            self.content_tab.setTabText(0, self.uiSystem.MainSystem.lang["ui", "content_all"])
+            self.content_tab.setTabText(1, self.uiSystem.MainSystem.lang["ui", "content_block"])
+            self.content_tab.setTabText(2, self.uiSystem.MainSystem.lang["ui", "content_item"])
+            self.content_tab.setTabText(3, self.uiSystem.MainSystem.lang["ui", "content_entity"])
+            self.content_tab.setTabText(4, self.uiSystem.MainSystem.lang["ui", "content_feature"])
+            self.content_tab.setTabText(5, self.uiSystem.MainSystem.lang["ui", "content_recipe"])
+            self.addItem.setText("+")
+            self.removeItem.setText("-")
+            self.data_tab.setTabText(0,self.uiSystem.MainSystem.lang["ui","behavior"])
+            self.data_tab.setTabText(1,self.uiSystem.MainSystem.lang["ui","resource"])
+            self.modifyComponents.setText("...")
+            self.menuFile.setTitle(self.uiSystem.MainSystem.lang["ui","file"])
+            self.menuNew.setTitle(self.uiSystem.MainSystem.lang["ui","new"])
+            self.actionBedrock_Addon.setText(self.uiSystem.MainSystem.lang["ui","bedrock_addon"])
+            self.actionJava_Mod.setText(self.uiSystem.MainSystem.lang["ui","java_mod"])
+            self.actionOpen.setText(self.uiSystem.MainSystem.lang["ui","open"])
+            self.actionSave.setText(self.uiSystem.MainSystem.lang["ui","save"])
+            self.actionExport.setText(self.uiSystem.MainSystem.lang["ui","export"])
 
-    def updateComponentList(self):
+    def updateContentList(self):
         self.all_list.clear()
         self.block_list.clear()
         self.item_list.clear()
@@ -87,68 +101,90 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         # blocks
         blocks_identifier = [key for key in self.uiSystem.MainSystem.project_object.blocks]
         blocks_identifier.sort()
-        self.all_list.addItems([f"[BLOCK] {identifier}" for identifier in blocks_identifier])
-        self.block_list.addItems([f"[BLOCK] {identifier}" for identifier in blocks_identifier])
+        self.all_list.addItems([f'[{self.uiSystem.MainSystem.lang["ui","content_block"]}] {identifier}' for identifier in blocks_identifier])
+        self.block_list.addItems([f'[{self.uiSystem.MainSystem.lang["ui","content_block"]}] {identifier}' for identifier in blocks_identifier])
 
     def bind(self):
-        self.addItem.clicked.connect(self.addComponent)
-        self.removeItem.clicked.connect(self.removeComponent)
+        self.addItem.clicked.connect(self.addContent)
+        self.removeItem.clicked.connect(self.removeContent)
         self.actionSave.triggered.connect(self.save)
         self.actionOpen.triggered.connect(self.uiSystem.MainSystem.askOpenProject)
         self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
         self.actionExport.triggered.connect(self.export)
-        self.all_list.itemClicked.connect(self.updateComponentData)
+        for l in [self.all_list,self.block_list,self.item_list,self.entity_list,self.feature_list,self.recipe_list]:
+            l.itemClicked.connect(self.updateComponent)
         self.modifyComponents.clicked.connect(self.clickedModifyComponent)
 
-    def addComponent(self):
-        current_text = self.component_tab.tabText(self.component_tab.currentIndex())
-        if current_text == "All":
-            select = QInputDialog.getItem(self.uiSystem,"addComponent","Select the component you want to add",["Block","Item","Entity","Feature","Recipe"],current=0,editable=False)
+    def addContent(self):
+        current_text = self.content_tab.tabText(self.content_tab.currentIndex())
+        if current_text == self.uiSystem.MainSystem.lang["ui","content_all"]:
+            select = QInputDialog.getItem(
+                self.uiSystem,
+                self.uiSystem.MainSystem.lang["ui","add_content"],
+                self.uiSystem.MainSystem.lang["ui","add_content_label"],
+                [
+                    self.uiSystem.MainSystem.lang["ui","content_block"],
+                    self.uiSystem.MainSystem.lang["ui","content_block"],
+                    self.uiSystem.MainSystem.lang["ui","content_entity"],
+                    self.uiSystem.MainSystem.lang["ui","content_feature"],
+                    self.uiSystem.MainSystem.lang["ui","content_recipe"]
+                ],
+                current=0,
+                editable=False
+            )
             if not select[1]:
                 return
             item = select[0]
-            if item == "Block":
-                self.addComponentBlock()
-        elif current_text == "Block":
-            self.addComponentBlock()
+            if item == self.uiSystem.MainSystem.lang["ui","content_block"]:
+                self.addContentBlock()
+        elif current_text == self.uiSystem.MainSystem.lang["ui","content_block"]:
+            self.addContentBlock()
 
-    def addComponentBlock(self):
-        new_block_input = QInputDialog.getText(self.uiSystem,"newBlock",'Enter the identifier of the New Block(example:"abc:apple")',text=f"{self.uiSystem.MainSystem.project_object.namespace}:",)
+    def addContentBlock(self):
+        new_block_input = QInputDialog.getText(
+            self.uiSystem,
+            self.uiSystem.MainSystem.lang["ui","new_block"],
+            self.uiSystem.MainSystem.lang["ui","new_block_label"],
+            text=f"{self.uiSystem.MainSystem.project_object.namespace}:"
+        )
         if not new_block_input[1]:
             return
         identifier = new_block_input[0]
         if identifier.find(" ") != -1:
-            QMessageBox.critical(self.uiSystem, "error", "Cannot contain Spaces")
+            QMessageBox.critical(self.uiSystem, self.uiSystem.MainSystem.lang["ui","error"], self.uiSystem.MainSystem.lang["ui","cannot_contain_spaces"])
+            return
+        if identifier == "":
+            QMessageBox.critical(self.uiSystem, self.uiSystem.MainSystem.lang["ui","error"], self.uiSystem.MainSystem.lang["ui","cannot_leave_blank"])
             return
         namespace,id = identifier.split(":")
 
         new_block = addon.Block(self.uiSystem.MainSystem.project_object)
         new_block.new(namespace,id)
         self.uiSystem.MainSystem.project_object.blocks[new_block.identifier] = new_block
-        self.updateComponentList()
+        self.updateContentList()
 
-    def removeComponent(self):
-        return_back = self.getSelectComponent()
+    def removeContent(self):
+        return_back = self.getSelectContent()
         if return_back == None:
             return
-        component_type, component = return_back
-        component.remove()
-        self.updateComponentList()
+        content_type, content = return_back
+        content.remove()
+        self.updateContentList()
 
-    def getSelectComponent(self):
+    def getSelectContent(self):
         """
         :return:
-        (type,component)/None
+        (type,content)/None
         """
-        tab_index = self.component_tab.currentIndex()
-        components_dict = {0:self.all_list,1:self.block_list,2:self.item_list,3:self.entity_list,4:self.feature_list,5:self.recipe_list}
-        component = components_dict[tab_index].currentItem()
-        if component is None:
+        tab_index = self.content_tab.currentIndex()
+        contents_dict = {0:self.all_list,1:self.block_list,2:self.item_list,3:self.entity_list,4:self.feature_list,5:self.recipe_list}
+        content = contents_dict[tab_index].currentItem()
+        if content is None:
             return None
-        component_text = component.text()
-        component_type,component_identifier = component_text.split(" ")
-        if component_type == "[BLOCK]":
-            return component_type, self.uiSystem.MainSystem.project_object.blocks[component_identifier]
+        content_text = content.text()
+        content_type,content_identifier = content_text.split(" ")
+        if content_type == f'[{self.uiSystem.MainSystem.lang["ui","content_block"]}]':
+            return content_type, self.uiSystem.MainSystem.project_object.blocks[content_identifier]
 
     def save(self):
         if self.uiSystem.MainSystem.project_object.save_path is None:
@@ -168,25 +204,25 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.uiSystem.MainSystem.project_object.close()
         QCoreApplication.instance().quit()
 
-    def updateComponentData(self):
+    def updateComponent(self):
         self.clearLayout(self.behavior_layout)
         self.clearLayout(self.resource_layout)
-        component = self.getSelectComponent()
-        if component is None:
+        content = self.getSelectContent()
+        if content is None:
             return
         self.component_ui = {}
-        component_type,component = component
-        for component_identifier in component.components:
-            component_data_obj = component.components[component_identifier]
+        content_type,content = content
+        for component_identifier in content.components:
+            component_data_obj = content.components[component_identifier]
             ui_dict = component_data_obj.getUiDict()
             group_box = QtWidgets.QGroupBox(self.behavior_scrollAreaWidgetContents)
             group_box.setObjectName("groupBox")
             form_layout = QtWidgets.QFormLayout(group_box)
             form_layout.setObjectName("formLayout")
-            self.component_ui[component_identifier] = self.setComponentDataUi(group_box, form_layout, ui_dict, component_data_obj.identifier)
+            self.component_ui[component_identifier] = self.setComponentUi(group_box, form_layout, ui_dict, component_data_obj.identifier)
             self.behavior_layout.addWidget(group_box)
 
-    def setComponentDataUi(self,group_box,form_layout,data_dict:dict,component_identifier:str):
+    def setComponentUi(self, group_box, form_layout, data_dict:dict, component_identifier:str):
         count = 0
         data_ui_dict = {}
         for key in data_dict:
@@ -203,7 +239,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 new_group_box.setTitle(key)
                 new_form_layout = QtWidgets.QFormLayout(new_group_box)
                 new_form_layout.setObjectName("formLayout")
-                child = self.setComponentDataUi(new_group_box,new_form_layout,data_dict[key],component_identifier)
+                child = self.setComponentUi(new_group_box, new_form_layout, data_dict[key], component_identifier)
                 field = new_group_box
 
             value, value_type, value_limit = data_dict[key]
@@ -212,7 +248,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 field = QtWidgets.QCheckBox(group_box)
                 field.setObjectName("checkBox")
                 field.setChecked(value)
-                field.stateChanged.connect(lambda:self.componentDataChanged(field))
+                field.stateChanged.connect(lambda:self.componentChanged(field))
 
             elif value_type == "int":
                 field = QtWidgets.QSpinBox(group_box)
@@ -221,7 +257,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                     field.setMinimum(value_limit[0])
                     field.setMaximum(value_limit[1])
                 field.setValue(value)
-                field.valueChanged.connect(lambda:self.componentDataChanged(field))
+                field.valueChanged.connect(lambda:self.componentChanged(field))
 
             elif value_type == "float":
                 field = QtWidgets.QDoubleSpinBox(group_box)
@@ -230,7 +266,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                     field.setMinimum(value_limit[0])
                     field.setMaximum(value_limit[1])
                 field.setValue(value)
-                field.valueChanged.connect(lambda:self.componentDataChanged(field))
+                field.valueChanged.connect(lambda:self.componentChanged(field))
 
             elif value_type == "str":
                 field = QtWidgets.QLineEdit(group_box)
@@ -238,12 +274,12 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 if value_limit is not None:
                     field.setMaxLength(value_limit)
                 field.setText(value)
-                field.textChanged.connect(lambda:self.componentDataChanged(field))
+                field.textChanged.connect(lambda:self.componentChanged(field))
 
             if field is None:
                 field = QtWidgets.QLabel(group_box)
                 field.setObjectName("label")
-                field.setText("Unsupported data type")
+                field.setText(self.uiSystem.MainSystem.lang["ui","unsupported_type"])
 
             field.identifier = component_identifier
             form_layout.setWidget(count, QtWidgets.QFormLayout.FieldRole,field)
@@ -266,37 +302,36 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             else:
                 self.clearLayout(item)
 
-    def componentDataChanged(self,item):
+    def componentChanged(self, item):
         ui_dict = self.component_ui[item.identifier]
-        component_obj = self.getSelectComponent()
-        if component_obj is None:
+        content_adj = self.getSelectContent()
+        if content_adj is None:
             return
-        component_data_obj = component_obj[1].components[item.identifier]
+        component_data_obj = content_adj[1].components[item.identifier]
         component_data_obj.parseFromUi(ui_dict)
-        self.updateComponentData()
+        self.updateComponent()
 
     def clickedModifyComponent(self):
-        component = self.getSelectComponent()
-        if component is None:
+        content = self.getSelectContent()
+        if content is None:
             return
-        component_type,component = component
+        content_type,content = content
 
-        dialog = AskComponent(component.getBehaviorComponents(),self.modifyComponentCallback)
+        dialog = AskComponent(content.getBehaviorComponents(),self.modifyComponentCallback)
         self.uiSystem.showDialog(dialog)
         dialog.showComponents()
 
     def modifyComponentCallback(self,component_dict):
-        component = self.getSelectComponent()
-        if component is None:
+        content = self.getSelectContent()
+        if content is None:
             return
-        component_type, component = component
+        content_type, content = content
         for component_data in component_dict:
-            print(component.components,component_dict[component_data],component)
-            if component_data in component.components and not component_dict[component_data]:
-                component.components.pop(component_data)
-            elif component_data not in component.components and component_dict[component_data]:
-                component.addBehaviorComponent(component_data)
-        self.updateComponentData()
+            if component_data in content.components and not component_dict[component_data]:
+                content.components.pop(component_data)
+            elif component_data not in content.components and component_dict[component_data]:
+                content.addBehaviorComponent(component_data)
+        self.updateComponent()
 
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
@@ -325,21 +360,19 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
         self.Ok.clicked.connect(self.OK)
 
     def rename(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.uiSystem.setWindowTitle(_translate("MainWindow", "Setting Addon"))
-        self.description_label_2.setText(_translate("MainWindow", "description"))
-        self.namespace_label.setText(_translate("MainWindow", "namespace"))
-        self.random_namepace.setText(_translate("MainWindow", "random"))
-        self.packName_label.setText(_translate("MainWindow", "Packname"))
-        self.pack_version_label.setText(_translate("MainWindow", "pack_version"))
-        self.label_4.setText(_translate("MainWindow", "."))
-        self.label_3.setText(_translate("MainWindow", "."))
-        self.game_version_label.setText(_translate("MainWindow", "game_minimum_version"))
-        self.icon_label.setText(_translate("MainWindow", "pack_icon"))
-        self.icon.setText(_translate("MainWindow", "<html><head/><body><p>Img</p><p><br/></p></body></html>"))
-        self.choose_icon.setText(_translate("MainWindow", "choose"))
-        self.Ok.setText(_translate("MainWindow", "Ok"))
-        self.Cancel.setText(_translate("MainWindow", "Cancel"))
+        self.uiSystem.setWindowTitle(self.uiSystem.MainSystem.lang["ui","addon_setting_title"])
+        self.description_label_2.setText(self.uiSystem.MainSystem.lang["ui","description"])
+        self.namespace_label.setText(self.uiSystem.MainSystem.lang["ui","namespace"])
+        self.random_namepace.setText(self.uiSystem.MainSystem.lang["ui","random"])
+        self.packName_label.setText(self.uiSystem.MainSystem.lang["ui","packname"])
+        self.pack_version_label.setText(self.uiSystem.MainSystem.lang["ui","pack_version"])
+        self.label_4.setText(".")
+        self.label_3.setText(".")
+        self.game_version_label.setText(self.uiSystem.MainSystem.lang["ui","game_minimum_version"])
+        self.icon_label.setText(self.uiSystem.MainSystem.lang["ui","pack_icon"])
+        self.choose_icon.setText(self.uiSystem.MainSystem.lang["ui","choose"])
+        self.Ok.setText(self.uiSystem.MainSystem.lang["ui","ok"])
+        self.Cancel.setText(self.uiSystem.MainSystem.lang["ui","cancel"])
 
     def mainVersionChanged(self):
         self.choose_detailed_version.clear()
@@ -379,18 +412,18 @@ class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
     def check(self):
         blank = []
         if self.packName.text() == "":
-            blank.append("PackName")
+            blank.append(self.uiSystem.MainSystem.lang["ui","packname"])
         if self.namespace_2.text() == "":
-            blank.append("Namespace")
-        if blank == []:
+            blank.append(self.uiSystem.MainSystem.lang["ui","namespace"])
+        if not blank:
             return True
 
-        message = f"Do not leave blank!\n("
+        message = f"{self.uiSystem.MainSystem.lang['ui','cannot_leave_blank']}\n("
         for name in blank:
             message += name
             message += ','
         message = message[:-1]+')'
-        QMessageBox.critical(self.uiSystem, "error", message)
+        QMessageBox.critical(self.uiSystem, self.uiSystem.MainSystem.lang["ui","error"], message)
         return False
 
 
@@ -425,6 +458,8 @@ class AskComponent(ask_components.Ui_Dialog,UiBasic):
             self.tableWidget.setCellWidget(row,1,description)
             enable = QtWidgets.QCheckBox()
             enable.setObjectName("enable")
+            enable.component_identifier = component_identifier
+            enable.stateChanged.connect(lambda:self.enableStateChanged(enable))
             hLayout = QtWidgets.QHBoxLayout()
             hLayout.addWidget(enable)
             hLayout.setAlignment(enable, Qt.AlignCenter)
@@ -441,21 +476,23 @@ class AskComponent(ask_components.Ui_Dialog,UiBasic):
 
     def tableRename(self):
         item = self.tableWidget.horizontalHeaderItem(0)
-        item.setText("name")
+        item.setText(self.ui_system.MainSystem.lang["ui","name"])
         item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText("description")
+        item.setText(self.ui_system.MainSystem.lang["ui","description"])
         item = self.tableWidget.horizontalHeaderItem(2)
-        item.setText("enable")
+        item.setText(self.ui_system.MainSystem.lang["ui","enable"])
 
     def rename(self):
-        self.dialog.setWindowTitle("components")
-        self.search.setPlaceholderText("search")
+        self.dialog.setWindowTitle(self.ui_system.MainSystem.lang["ui","ask_component_title"])
+        self.search.setPlaceholderText(self.ui_system.MainSystem.lang["ui","search"])
+        self.ok_button.setText(self.ui_system.MainSystem.lang["ui","ok"])
+        self.cancel_button.setText(self.ui_system.MainSystem.lang["ui","cancel"])
         self.tableRename()
 
     def bind(self):
-        self.DialogButtonBox.rejected.connect(self.dialog.close)
+        self.cancel_button.clicked.connect(self.dialog.close)
         # self.DialogButtonBox.accepted.connect(self.ok) # 这样写点击按钮没反应
-        self.DialogButtonBox.accepted.connect(lambda:self.ok()) # 但是这样写可以
+        self.ok_button.clicked.connect(lambda:self.ok()) # 但是这样写可以
         self.search.textChanged.connect(self.searchTextChanged)
 
     def ok(self):
@@ -486,10 +523,13 @@ class AskComponent(ask_components.Ui_Dialog,UiBasic):
             return
         matching_components_dict = {}
         for identifier in self.component_dict:
-            if keyword in identifier:
+            component_info = self.component_dict[identifier]
+            if keyword in component_info["name"]:
                 matching_components_dict[identifier] = self.component_dict[identifier]
         self.showComponents(matching_components_dict)
 
+    def enableStateChanged(self,enable):
+        self.component_dict[enable.component_identifier]["is_checked"] = enable.isChecked()
 
 class Setting(setting.Ui_Dialog,UiBasic):
     def setupUi(self, ui_system,Dialog):
@@ -498,27 +538,29 @@ class Setting(setting.Ui_Dialog,UiBasic):
         super(Setting, self).setupUi(Dialog)
 
     def rename(self):
-        self.dialog.setWindowTitle("setting")
-        self.Individuation.setTitle("Individuation")
-        self.theme_text.setText("theme")
-        self.language_text.setText("language")
-        self.Update.setTitle("Update")
-        self.c_v_text.setText("Current version")
+        self.dialog.setWindowTitle(self.ui_system.MainSystem.lang["ui","setting_title"])
+        self.Individuation.setTitle(self.ui_system.MainSystem.lang["ui","individuation"])
+        self.theme_text.setText(self.ui_system.MainSystem.lang["ui","theme"])
+        self.language_text.setText(self.ui_system.MainSystem.lang["ui","language"])
+        self.Update.setTitle(self.ui_system.MainSystem.lang["ui","update"])
+        self.c_v_text.setText(self.ui_system.MainSystem.lang["ui","current_version"])
         self.c_v.setText("")
-        self.l_v_text.setText("Latest version")
+        self.l_v_text.setText(self.ui_system.MainSystem.lang["ui","latest_version"])
         self.l_v.setText("")
-        self.check_n_v.setText("Check the new version")
-        self.Other.setTitle("Other")
-        self.clear_cache.setText("ClearCache")
+        self.check_n_v.setText(self.ui_system.MainSystem.lang["ui","check_new_version"])
+        self.Other.setTitle(self.ui_system.MainSystem.lang["ui","other"])
+        self.clear_cache.setText(self.ui_system.MainSystem.lang["ui","clear_cache"])
 
     def bind(self):
         self.clear_cache.clicked.connect(lambda:lib.clearFolder("tmp"))
+        self.language.currentTextChanged.connect(lambda:self.languageChanged())
+        self.theme.currentTextChanged.connect(lambda:self.themeChanged())
 
     def init(self):
         self.language.clear()
+        self.theme.clear()
         self.languages = {}
-        languages = []
-        for folder in os.listdir("lang"):
+        for folder in listdir("lang"):
             languages_info = {}
             self.languages[folder] = {}
             with open(f"./lang/{folder}/language","r",encoding="utf-8") as f:
@@ -529,19 +571,49 @@ class Setting(setting.Ui_Dialog,UiBasic):
                     key,value = line.split("=")
                     languages_info[key] = value
                     self.languages[folder][key] = value
-            languages.append(languages_info["name"])
-        self.language.addItems(languages)
+            self.language.addItem(languages_info["name"])
+
+        for file in listdir("theme"):
+            theme_name = file.replace(".qss","")
+            self.theme.addItem(theme_name)
+        self.theme.setCurrentText(self.ui_system.MainSystem.config["theme"])
 
         self.language.setCurrentText(self.languages[self.ui_system.MainSystem.config["lang"]]["name"])
         self.rename()
         self.bind()
+
+    def languageChanged(self):
+        language = self.language.currentText()
+        for lang_id in self.languages:
+            if self.languages[lang_id]["name"] == language:
+                self.ui_system.MainSystem.loadLanguage(lang_id)
+                self.ui_system.ui.rename()
+                self.ui_system.dialog_ui.rename()
+                self.ui_system.MainSystem.config["lang"] = lang_id
+                return
+
+    def themeChanged(self):
+        theme = self.theme.currentText()
+        self.ui_system.loadTheme(theme)
 
 class UiSystem(QMainWindow):
     def __init__(self,MainSystem,Ui=StartUi()):
         super().__init__()
         self.MainSystem = MainSystem
         self.ui = None
+        self.dialog = None
+        self.dialog_ui = None
+        self.style_sheet = None
+        self.loadTheme(self.MainSystem.config["theme"])
         self.changeUi(Ui)
+
+    def loadTheme(self,theme):
+        self.MainSystem.config["theme"] = theme
+        if f'{self.MainSystem.config["theme"]}.qss' not in listdir('theme'):
+            self.MainSystem.config["theme"] = "Default"
+        with open(f"./theme/{self.MainSystem.config['theme']}.qss") as f:
+            self.style_sheet = f.read()
+        self.setStyleSheet(self.style_sheet)
 
     def changeUi(self,ui_obj):
         self.ui = ui_obj
@@ -554,7 +626,10 @@ class UiSystem(QMainWindow):
             self.ui.close()
 
     def showDialog(self,ui_obj):
-        dialog = QDialog(self)
-        ui_obj.setupUi(self,dialog)
-        ui_obj.init()
-        dialog.show()
+        self.dialog_ui = ui_obj
+        if self.dialog:
+            self.dialog.close()
+        self.dialog = QDialog(self)
+        self.dialog_ui.setupUi(self,self.dialog)
+        self.dialog_ui.init()
+        self.dialog.show()

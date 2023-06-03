@@ -1,4 +1,5 @@
-import os, requests
+import os
+from requests import get
 from lxml import etree
 from PyQt5 import QtWidgets
 
@@ -12,8 +13,8 @@ def buildDirectories(path,directories):
     os.chdir(p)
 
 def getBedrockGameVersionsList():
-    get = requests.get("https://minecraft.fandom.com/zh/wiki/%E5%9F%BA%E5%B2%A9%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95")
-    html = etree.HTML(get.text)
+    g = get("https://minecraft.fandom.com/zh/wiki/%E5%9F%BA%E5%B2%A9%E7%89%88%E7%89%88%E6%9C%AC%E8%AE%B0%E5%BD%95")
+    html = etree.HTML(g.text)
     main_versions_list = html.xpath('//div[@class="mw-parser-output"]/h3/span[@class="mw-headline"]/text()')
     detailed_versions_list = html.xpath('//div[@class="mw-parser-output"]/table[@class="wikitable"]/tbody/tr/td[1]/a/text()')
     return_dict = {}
@@ -51,17 +52,6 @@ def compressDir(dir_path, zip_obj, prefix=""):
         else:
             zip_obj.write(f"{dir_path}/{file}", f"{prefix}/{file}")
 
-def loadLang(file_path):
-    lang = {}
-    with open(file_path,"r",encoding="utf-8") as f:
-        for line in f.readlines():
-            if "=" not in line:
-                continue
-            line = line[:-1]
-            key,value = line.split("=")
-            lang[key] = value
-        return lang
-
 
 def getWidgetValue(widget):
     if isinstance(widget,QtWidgets.QCheckBox):  # bool
@@ -74,3 +64,38 @@ def getWidgetValue(widget):
         return widget.text()
     if isinstance(widget,QtWidgets.QTextEdit):  # str
         return widget.toPlainText()
+
+
+class Language:
+    def __init__(self,id):
+        self.lang = {}
+        self.lang_info = {}
+        self.lang_keys = []
+        self.loadLangFolder(id)
+
+    def loadLangFolder(self,id):
+        self.lang = {}
+        self.lang_info = {}
+        self.id = id
+        for file in os.listdir(f"lang/{id}"):
+            if file == "language":
+                with open(f"lang/{id}/language","r",encoding="utf-8") as f:
+                    for line in f.readlines():
+                        line = line[:-1]
+                        key,value = line.split("=")
+                        self.lang_info[key] = value
+
+            with open(f"lang/{id}/{file}", "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if "=" not in line:
+                        continue
+                    line = line[:-1]
+                    key, value = line.split("=")
+                    self.lang[f"{file.replace('.lang','')}_{key}"] = value
+        self.lang_keys = self.lang.keys()
+
+    def __getitem__(self,t):
+        module,lang_id = t
+        if f"{module}_{lang_id}" in self.lang_keys:
+            return self.lang[f"{module}_{lang_id}"]
+        return "???"

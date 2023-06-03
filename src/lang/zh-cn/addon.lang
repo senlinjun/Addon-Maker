@@ -1,0 +1,2 @@
+minecraft:collision_box_description=定义与实体碰撞的方块的面积。如果设置为true，则使用默认值。如果设置为false，块与实体的碰撞将被禁用。如果省略该组件，则使用默认值。
+minecraft:collision_box_name=碰撞箱

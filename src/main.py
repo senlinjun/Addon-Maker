@@ -1,4 +1,6 @@
-import uiSystem, addon, lib, sys, os, json, zipfile
+import uiSystem, addon, lib, sys, json
+from zipfile import ZipFile
+from os import mkdir,listdir
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox
 from PyQt5 import QtGui
 
@@ -6,17 +8,21 @@ class MainSystem:
     def __init__(self):
         self.app = QApplication(sys.argv)
         self.app.setWindowIcon(QtGui.QIcon("./resources/ico.ico"))
-        self.ui = uiSystem.UiSystem(self)
+        self.ui = None
         self.project_object = None
-        self.lang = {}
+        self.lang = lib.Language("en-us")
         self.config = {}
 
     def load(self):
         self.loadConfig()
         self.bedrock_game_version_list = lib.getBedrockGameVersionsList()
-        self.lang["addon"] = lib.loadLang(f"./lang/{self.config['lang']}/addon.lang")
+        self.loadLanguage(self.config["lang"])
+
+    def loadLanguage(self,lang):
+        self.lang.loadLangFolder(lang)
 
     def run(self):
+        self.ui = uiSystem.UiSystem(self)
         self.ui.show()
         self.app.exec_()
 
@@ -27,7 +33,7 @@ class MainSystem:
         self.openProject(file)
 
     def openProject(self,file):
-        zip = zipfile.ZipFile(file, "r")
+        zip = ZipFile(file, "r")
         zip.extractall("./tmp")
         dir_name = zip.namelist()[0].split("/")[0]
         path = f"./tmp/{dir_name}"
@@ -40,7 +46,7 @@ class MainSystem:
             self.project_object.load(path,project_data)
             self.ui.changeUi(uiSystem.AddonUi())
         else:
-            QMessageBox.critical(self.ui,"error","We can't open this project.\n(Unsupported project)")
+            QMessageBox.critical(self.ui,self.lang["ui","error"],self.lang["ui","unsupported_project"])
 
     def loadConfig(self):
         self.config = {}
@@ -51,12 +57,15 @@ class MainSystem:
                 self.config[key] = value
 
 # Init
-if "tmp" not in os.listdir():
-    os.mkdir("tmp")
-if "config" not in os.listdir():
+if "tmp" not in listdir():
+    mkdir("tmp")
+if "config" not in listdir():
     with open("config","w") as f:
-        f.write("lang=en-us\n")
+        f.write("lang=en-us\ntheme=Default\n")
 
 main = MainSystem()
 main.load()
 main.run()
+with open("config", "w") as f:
+    for key in main.config:
+        f.write(f"{key}={main.config[key]}\n")

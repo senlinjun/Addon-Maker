@@ -196,8 +196,8 @@ class Block:
         back_dict = {}
         for component in BlockBehavior.components:
             back_dict[component] = {
-                "name":self.addon.MainSystem.lang["addon"][f"{component}_name"],
-                "description": self.addon.MainSystem.lang["addon"][f"{component}_description"],
+                "name":self.addon.MainSystem.lang["addon",f"{component}_name"],
+                "description": self.addon.MainSystem.lang["addon",f"{component}_description"],
                 "is_checked": component in self.components
             }
         return back_dict
