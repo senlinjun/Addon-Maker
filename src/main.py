@@ -63,8 +63,11 @@ if "config" not in listdir():
     with open("config","w") as f:
         f.write("lang=en-us\ntheme=Default\n")
 
+argv = sys.argv
 main = MainSystem()
 main.load()
+if len(argv) > 1:
+    main.openProject(argv[1])
 main.run()
 with open("config", "w") as f:
     for key in main.config:

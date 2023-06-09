@@ -5,22 +5,19 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QDialog, QAbstractItemView
 from PyQt5.QtCore import QCoreApplication, Qt
 
-'''
-每个ui都必须有
-init()方法
-close_callback布尔值变量
-close()方法（如果close_callback为True）
-'''
-
 
 class UiBasic:
     def __init__(self):
         self.close_callback = False
+        self.drop_callback = False
 
     def close(self):
         pass
 
     def init(self):
+        pass
+
+    def drop(self,text):
         pass
 
 
@@ -35,6 +32,7 @@ class StartUi(start.Ui_MainWindow,UiBasic):
         self.bind()
         img = QtGui.QPixmap("./resources/start.png")
         self.img.setPixmap(img)
+        self.drop_callback = True
 
     def rename(self):
         self.uiSystem.setWindowTitle(self.uiSystem.MainSystem.lang["ui","start_title"])
@@ -56,6 +54,10 @@ class StartUi(start.Ui_MainWindow,UiBasic):
     def addonClicked(self):
         self.uiSystem.changeUi(AddonSetting(self))
 
+    def drop(self,file:str):
+        file_path = file.replace("file:///","")
+        self.uiSystem.MainSystem.openProject(file_path)
+
 
 class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def setupUi(self, uiSystem):
@@ -65,6 +67,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def init(self):
         self.component_ui = {}
         self.close_callback = True
+        self.drop_callback = True
         self.rename()
         self.bind()
         self.updateContentList()
@@ -332,6 +335,10 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             elif component_data not in content.components and component_dict[component_data]:
                 content.addBehaviorComponent(component_data)
         self.updateComponent()
+
+    def drop(self,file):
+        file_path = file.replace("file:///","")
+        self.uiSystem.MainSystem.openProject(file_path)
 
 
 class AddonSetting(addon_setting.Ui_MainWindow,UiBasic):
@@ -604,6 +611,7 @@ class UiSystem(QMainWindow):
         self.dialog = None
         self.dialog_ui = None
         self.style_sheet = None
+        self.setAcceptDrops(False)
         self.loadTheme(self.MainSystem.config["theme"])
         self.changeUi(Ui)
 
@@ -619,6 +627,7 @@ class UiSystem(QMainWindow):
         self.ui = ui_obj
         self.ui.setupUi(self)
         self.ui.init()
+        self.setAcceptDrops(self.ui.drop_callback)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self.ui.close_callback:
@@ -633,3 +642,9 @@ class UiSystem(QMainWindow):
         self.dialog_ui.setupUi(self,self.dialog)
         self.dialog_ui.init()
         self.dialog.show()
+
+    def dragEnterEvent(self,event):
+        event.accept()
+
+    def dropEvent(self, event):
+        self.ui.drop(event.mimeData().text())

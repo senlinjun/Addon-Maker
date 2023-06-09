@@ -98,4 +98,4 @@ class Language:
         module,lang_id = t
         if f"{module}_{lang_id}" in self.lang_keys:
             return self.lang[f"{module}_{lang_id}"]
-        return "???"
+        return f"{module}_{lang_id}"
