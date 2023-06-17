@@ -23,7 +23,7 @@
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
-         <widget class="QTabWidget" name="component_tab">
+         <widget class="QTabWidget" name="content_tab">
           <property name="currentIndex">
            <number>0</number>
           </property>

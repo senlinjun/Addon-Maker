@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.content_tab = QtWidgets.QTabWidget(self.layoutWidget)
         self.content_tab.setTabBarAutoHide(False)
-        self.content_tab.setObjectName("component_tab")
+        self.content_tab.setObjectName("content_tab")
         self.all = QtWidgets.QWidget()
         self.all.setObjectName("all")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.all)

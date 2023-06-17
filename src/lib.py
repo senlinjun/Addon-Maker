@@ -64,6 +64,8 @@ def getWidgetValue(widget):
         return widget.text()
     if isinstance(widget,QtWidgets.QTextEdit):  # str
         return widget.toPlainText()
+    if isinstance(widget,QtWidgets.QComboBox):  # list(comboBox)
+        return widget.currentText()
 
 
 class Language:
@@ -89,7 +91,8 @@ class Language:
                 for line in f.readlines():
                     if "=" not in line:
                         continue
-                    line = line[:-1]
+                    if line[-1] == '\n':
+                        line = line[:-1]
                     key, value = line.split("=")
                     self.lang[f"{file.replace('.lang','')}_{key}"] = value
         self.lang_keys = self.lang.keys()

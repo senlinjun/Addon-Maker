@@ -33,6 +33,7 @@ class MainSystem:
         self.openProject(file)
 
     def openProject(self,file):
+        lib.clearFolder("tmp")
         zip = ZipFile(file, "r")
         zip.extractall("./tmp")
         dir_name = zip.namelist()[0].split("/")[0]
@@ -52,7 +53,8 @@ class MainSystem:
         self.config = {}
         with open("config","r") as f:
             for line in f.readlines():
-                line = line[:-1]
+                if line[-1] == '\n':
+                    line = line[:-1]
                 key,value = line.split("=")
                 self.config[key] = value
 

@@ -1,6 +1,7 @@
 class BasicComponent:
-    def __init__(self,identifier):
+    def __init__(self,identifier,content):
         self.identifier = identifier
+        self.content = content
 
     def parse(self,component_value):
         pass

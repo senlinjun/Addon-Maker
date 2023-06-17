@@ -30,7 +30,6 @@ class BehaviorPack:
             block_id = block.id
             block.generateBehaviorData()
             block_data = block.behavior_data
-            print(block_data)
             block_namespace = block.namespace
             with open(f"{self.path}/blocks/{block_namespace}_{block_id}.json", "w") as f:
                 json.dump(block_data, f, indent=1)
@@ -55,7 +54,7 @@ class BehaviorPack:
                     block.addBehaviorComponent(component)
             for component in block_data["minecraft:block"]["components"]:
                 if component in BlockBehavior.components:
-                    component_obj = BlockBehavior.components[component]()
+                    component_obj = BlockBehavior.components[component](self)
                     component_obj.parse(block_data["minecraft:block"]["components"][component])
                     block.components[component] = component_obj
 
@@ -203,7 +202,7 @@ class Block:
         return back_dict
 
     def addBehaviorComponent(self,component_identifier):
-        self.components[component_identifier] = BlockBehavior.components[component_identifier]()
+        self.components[component_identifier] = BlockBehavior.components[component_identifier](self)
 
     def removeBehaviorComponent(self,component_identifier):
         self.components.pop(component_identifier)

@@ -92,6 +92,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             self.actionOpen.setText(self.uiSystem.MainSystem.lang["ui","open"])
             self.actionSave.setText(self.uiSystem.MainSystem.lang["ui","save"])
             self.actionExport.setText(self.uiSystem.MainSystem.lang["ui","export"])
+            self.showComponent()
 
     def updateContentList(self):
         self.all_list.clear()
@@ -115,7 +116,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.actionBedrock_Addon.triggered.connect(lambda:self.uiSystem.changeUi(AddonSetting(self)))
         self.actionExport.triggered.connect(self.export)
         for l in [self.all_list,self.block_list,self.item_list,self.entity_list,self.feature_list,self.recipe_list]:
-            l.itemClicked.connect(self.updateComponent)
+            l.itemClicked.connect(self.showComponent)
         self.modifyComponents.clicked.connect(self.clickedModifyComponent)
 
     def addContent(self):
@@ -207,12 +208,13 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.uiSystem.MainSystem.project_object.close()
         QCoreApplication.instance().quit()
 
-    def updateComponent(self):
+    def showComponent(self):
         self.clearLayout(self.behavior_layout)
         self.clearLayout(self.resource_layout)
         content = self.getSelectContent()
         if content is None:
             return
+        size = 20
         self.component_ui = {}
         content_type,content = content
         for component_identifier in content.components:
@@ -220,12 +222,17 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             ui_dict = component_data_obj.getUiDict()
             group_box = QtWidgets.QGroupBox(self.behavior_scrollAreaWidgetContents)
             group_box.setObjectName("groupBox")
+            group_box.setTitle(self.uiSystem.MainSystem.lang["addon",f"{component_identifier}_name"])
             form_layout = QtWidgets.QFormLayout(group_box)
             form_layout.setObjectName("formLayout")
-            self.component_ui[component_identifier] = self.setComponentUi(group_box, form_layout, ui_dict, component_data_obj.identifier)
+            self.component_ui[component_identifier],component_ui_size = self.setComponentUi(group_box, form_layout, ui_dict, component_data_obj.identifier)
+            size += component_ui_size
             self.behavior_layout.addWidget(group_box)
 
+        self.behavior_scrollAreaWidgetContents.setGeometry(0,0,340,size)
+
     def setComponentUi(self, group_box, form_layout, data_dict:dict, component_identifier:str):
+        size = 30  # groupBox所占的30px
         count = 0
         data_ui_dict = {}
         for key in data_dict:
@@ -242,8 +249,9 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 new_group_box.setTitle(key)
                 new_form_layout = QtWidgets.QFormLayout(new_group_box)
                 new_form_layout.setObjectName("formLayout")
-                child = self.setComponentUi(new_group_box, new_form_layout, data_dict[key], component_identifier)
+                child,child_size = self.setComponentUi(new_group_box, new_form_layout, data_dict[key], component_identifier)
                 field = new_group_box
+                size += child_size
 
             value, value_type, value_limit = data_dict[key]
 
@@ -259,6 +267,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 if value_limit is not None:
                     field.setMinimum(value_limit[0])
                     field.setMaximum(value_limit[1])
+                    if len(value_limit) >= 3:
+                        field.setSingleStep(value_limit[2])
                 field.setValue(value)
                 field.valueChanged.connect(lambda:self.componentChanged(field))
 
@@ -268,6 +278,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 if value_limit is not None:
                     field.setMinimum(value_limit[0])
                     field.setMaximum(value_limit[1])
+                    if len(value_limit) >= 3:
+                        field.setSingleStep(value_limit[2])
                 field.setValue(value)
                 field.valueChanged.connect(lambda:self.componentChanged(field))
 
@@ -278,6 +290,13 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                     field.setMaxLength(value_limit)
                 field.setText(value)
                 field.textChanged.connect(lambda:self.componentChanged(field))
+
+            elif value_type == "list":
+                if value_limit is not None:
+                    field = QtWidgets.QComboBox(group_box)
+                    field.setObjectName("comboBox")
+                    field.addItems(value_limit)
+                    field.currentIndexChanged.connect(lambda:self.componentChanged(field))
 
             if field is None:
                 field = QtWidgets.QLabel(group_box)
@@ -291,7 +310,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             else:
                 data_ui_dict[key] = child
             count += 1
-        return data_ui_dict
+            size += 25
+        return data_ui_dict,size
 
     def clearLayout(self, layout):
         item_list = list(range(layout.count()))
@@ -312,7 +332,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return
         component_data_obj = content_adj[1].components[item.identifier]
         component_data_obj.parseFromUi(ui_dict)
-        self.updateComponent()
+        self.showComponent()
 
     def clickedModifyComponent(self):
         content = self.getSelectContent()
@@ -334,7 +354,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 content.components.pop(component_data)
             elif component_data not in content.components and component_dict[component_data]:
                 content.addBehaviorComponent(component_data)
-        self.updateComponent()
+        self.showComponent()
 
     def drop(self,file):
         file_path = file.replace("file:///","")
