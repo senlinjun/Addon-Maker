@@ -81,7 +81,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.addWidget(self.content_tab)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem)
         self.addItem = QtWidgets.QToolButton(self.layoutWidget)
         self.addItem.setObjectName("addItem")
@@ -106,8 +108,12 @@ class Ui_MainWindow(object):
         self.behavior_scrollArea.setObjectName("behavior_scrollArea")
         self.behavior_scrollAreaWidgetContents = QtWidgets.QWidget()
         self.behavior_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 342, 582))
-        self.behavior_scrollAreaWidgetContents.setObjectName("behavior_scrollAreaWidgetContents")
-        self.behavior_layout = QtWidgets.QVBoxLayout(self.behavior_scrollAreaWidgetContents)
+        self.behavior_scrollAreaWidgetContents.setObjectName(
+            "behavior_scrollAreaWidgetContents"
+        )
+        self.behavior_layout = QtWidgets.QVBoxLayout(
+            self.behavior_scrollAreaWidgetContents
+        )
         self.behavior_layout.setObjectName("behavior_layout")
         self.behavior_scrollArea.setWidget(self.behavior_scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.behavior_scrollArea, 0, 0, 1, 1)
@@ -121,8 +127,12 @@ class Ui_MainWindow(object):
         self.resource_scrollArea.setObjectName("resource_scrollArea")
         self.resource_scrollAreaWidgetContents = QtWidgets.QWidget()
         self.resource_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 342, 582))
-        self.resource_scrollAreaWidgetContents.setObjectName("resource_scrollAreaWidgetContents")
-        self.resource_layout = QtWidgets.QVBoxLayout(self.resource_scrollAreaWidgetContents)
+        self.resource_scrollAreaWidgetContents.setObjectName(
+            "resource_scrollAreaWidgetContents"
+        )
+        self.resource_layout = QtWidgets.QVBoxLayout(
+            self.resource_scrollAreaWidgetContents
+        )
         self.resource_layout.setObjectName("resource_layout")
         self.resource_scrollArea.setWidget(self.resource_scrollAreaWidgetContents)
         self.gridLayout.addWidget(self.resource_scrollArea, 0, 0, 1, 1)
@@ -130,7 +140,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addWidget(self.data_tab)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_2.addItem(spacerItem1)
         self.modifyComponents = QtWidgets.QToolButton(self.layoutWidget1)
         self.modifyComponents.setObjectName("modifyComponents")
@@ -175,16 +187,32 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.all), _translate("MainWindow", "All"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.block), _translate("MainWindow", "Block"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.item), _translate("MainWindow", "Item"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.entity), _translate("MainWindow", "Entity"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.feature), _translate("MainWindow", "Feature"))
-        self.content_tab.setTabText(self.content_tab.indexOf(self.recipe), _translate("MainWindow", "Recipe"))
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.all), _translate("MainWindow", "All")
+        )
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.block), _translate("MainWindow", "Block")
+        )
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.item), _translate("MainWindow", "Item")
+        )
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.entity), _translate("MainWindow", "Entity")
+        )
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.feature), _translate("MainWindow", "Feature")
+        )
+        self.content_tab.setTabText(
+            self.content_tab.indexOf(self.recipe), _translate("MainWindow", "Recipe")
+        )
         self.addItem.setText(_translate("MainWindow", "+"))
         self.removeItem.setText(_translate("MainWindow", "-"))
-        self.data_tab.setTabText(self.data_tab.indexOf(self.behavior), _translate("MainWindow", "behavior"))
-        self.data_tab.setTabText(self.data_tab.indexOf(self.resource), _translate("MainWindow", "resource"))
+        self.data_tab.setTabText(
+            self.data_tab.indexOf(self.behavior), _translate("MainWindow", "behavior")
+        )
+        self.data_tab.setTabText(
+            self.data_tab.indexOf(self.resource), _translate("MainWindow", "resource")
+        )
         self.modifyComponents.setText(_translate("MainWindow", "..."))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuNew.setTitle(_translate("MainWindow", "New"))

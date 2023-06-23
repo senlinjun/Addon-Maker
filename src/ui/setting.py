@@ -32,7 +32,9 @@ class Ui_Dialog(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.theme)
         self.language_text = QtWidgets.QLabel(self.Individuation)
         self.language_text.setObjectName("language_text")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.language_text)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.language_text
+        )
         self.language = QtWidgets.QComboBox(self.Individuation)
         self.language.setObjectName("language")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.language)
@@ -63,7 +65,9 @@ class Ui_Dialog(object):
         self.formLayout_3.setObjectName("formLayout_3")
         self.clear_cache = QtWidgets.QPushButton(self.Other)
         self.clear_cache.setObjectName("clear_cache")
-        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.clear_cache)
+        self.formLayout_3.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.clear_cache
+        )
         self.horizontalLayout.addWidget(self.Other)
         self.verticalLayout.addLayout(self.horizontalLayout)
 

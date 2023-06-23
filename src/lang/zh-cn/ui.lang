@@ -50,3 +50,7 @@ theme=主题
 unsupported_project=不支持的文件
 unsupported_type=不支持的类型
 update=升级
+input=输入
+edit=编辑
+list_value=值
+list_value_Type=类型

@@ -37,7 +37,9 @@ class Ui_Dialog(object):
         self.verticalLayout.addWidget(self.tableWidget)
         self.bottom = QtWidgets.QHBoxLayout()
         self.bottom.setObjectName("bottom")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.bottom.addItem(spacerItem)
         self.ok_button = QtWidgets.QPushButton(Dialog)
         self.ok_button.setObjectName("ok_button")

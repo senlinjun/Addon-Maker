@@ -77,7 +77,9 @@ class Ui_MainWindow(object):
         self.pack_version_2 = QtWidgets.QSpinBox(self.centralwidget)
         self.pack_version_2.setObjectName("pack_version_2")
         self.horizontalLayout_7.addWidget(self.pack_version_2)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_7.addItem(spacerItem)
         self.gridLayout.addLayout(self.horizontalLayout_7, 3, 0, 1, 1)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -107,7 +109,9 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.gridLayout)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        spacerItem1 = QtWidgets.QSpacerItem(258, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            258, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_6.addItem(spacerItem1)
         self.Ok = QtWidgets.QPushButton(self.centralwidget)
         self.Ok.setObjectName("Ok")
@@ -138,9 +142,15 @@ class Ui_MainWindow(object):
         self.pack_version_label.setText(_translate("MainWindow", "pack_version"))
         self.label_4.setText(_translate("MainWindow", "."))
         self.label_3.setText(_translate("MainWindow", "."))
-        self.game_version_label.setText(_translate("MainWindow", "game_minimum_version"))
+        self.game_version_label.setText(
+            _translate("MainWindow", "game_minimum_version")
+        )
         self.icon_label.setText(_translate("MainWindow", "pack_icon"))
-        self.icon.setText(_translate("MainWindow", "<html><head/><body><p>Img</p><p><br/></p></body></html>"))
+        self.icon.setText(
+            _translate(
+                "MainWindow", "<html><head/><body><p>Img</p><p><br/></p></body></html>"
+            )
+        )
         self.choose_icon.setText(_translate("MainWindow", "choose"))
         self.Ok.setText(_translate("MainWindow", "Ok"))
         self.Cancel.setText(_translate("MainWindow", "Cancel"))

@@ -50,3 +50,7 @@ theme=theme
 unsupported_project=Unsupported project
 unsupported_type=Unsupported type
 update=Update
+input=Input
+edit=Edit
+list_value=Value
+list_value_type=Type

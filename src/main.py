@@ -1,8 +1,9 @@
 import uiSystem, addon, lib, sys, json
 from zipfile import ZipFile
-from os import mkdir,listdir
+from os import mkdir, listdir
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox
 from PyQt5 import QtGui
+
 
 class MainSystem:
     def __init__(self):
@@ -18,7 +19,7 @@ class MainSystem:
         self.bedrock_game_version_list = lib.getBedrockGameVersionsList()
         self.loadLanguage(self.config["lang"])
 
-    def loadLanguage(self,lang):
+    def loadLanguage(self, lang):
         self.lang.loadLangFolder(lang)
 
     def run(self):
@@ -32,44 +33,47 @@ class MainSystem:
             return
         self.openProject(file)
 
-    def openProject(self,file):
+    def openProject(self, file):
         lib.clearFolder("tmp")
         zip = ZipFile(file, "r")
         zip.extractall("./tmp")
         dir_name = zip.namelist()[0].split("/")[0]
         path = f"./tmp/{dir_name}"
         zip.close()
-        with open(f"{path}/project.json","r") as f:
+        with open(f"{path}/project.json", "r") as f:
             project_data = json.load(f)
         if project_data["pack_type"] == "addon":
             self.project_object = addon.BedrockAddon(self)
             self.project_object.save_path = file
-            self.project_object.load(path,project_data)
+            self.project_object.load(path, project_data)
             self.ui.changeUi(uiSystem.AddonUi())
         else:
-            QMessageBox.critical(self.ui,self.lang["ui","error"],self.lang["ui","unsupported_project"])
+            QMessageBox.critical(
+                self.ui,
+                self.lang["ui", "error"],
+                self.lang["ui", "unsupported_project"],
+            )
 
     def loadConfig(self):
         self.config = {}
-        with open("config","r") as f:
+        with open("config", "r") as f:
             for line in f.readlines():
-                if line[-1] == '\n':
+                if line[-1] == "\n":
                     line = line[:-1]
-                key,value = line.split("=")
+                key, value = line.split("=")
                 self.config[key] = value
+
 
 # Init
 if "tmp" not in listdir():
     mkdir("tmp")
 if "config" not in listdir():
-    with open("config","w") as f:
+    with open("config", "w") as f:
         f.write("lang=en-us\ntheme=Default\n")
 
 argv = sys.argv
 main = MainSystem()
 main.load()
-if len(argv) > 1:
-    main.openProject(argv[1])
 main.run()
 with open("config", "w") as f:
     for key in main.config:

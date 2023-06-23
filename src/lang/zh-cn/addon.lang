@@ -33,3 +33,7 @@ minecraft:selection_box_description=定义玩家光标所选择的方块的区�
 minecraft:selection_box_enable=启用
 minecraft:selection_box_origin=原点
 minecraft:selection_box_size=尺寸
+is_experimental_name=实验性方块
+is_experimental_description=决定了该方块是否为实验性方块。默认值为 false 。若此属性值为 true ，则该方块需开启实验性玩法才可获得。
+register_to_creative_menu_name=出现于创造模式物品栏
+register_to_creative_menu_description=设置此方块是否出现在创造模式物品栏。（基岩版1.15.0至今由于不明原因导致此API失效，待修复）
