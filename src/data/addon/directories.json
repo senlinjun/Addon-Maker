@@ -4,9 +4,6 @@
     },
     "resource_pack" : {
         "texts": {},
-        "textures" : {
-            "blocks" : {},
-            "items" : {}
-        }
+        "textures" : {}
     }
 }

@@ -94,15 +94,19 @@ class ResourcePack:
             "texture_data": {},
         }
 
-    def addBlockTexture(self, file: str):
-        filename = file.split("/")[-1].split("\\")[-1].replace(".png", "")
+    def addTexture(self, file: str, identifier: str):
         with open(file, "rb") as f:
             data = f.read()
-        with open(f"{self.path}/textures/blocks/{filename}.png", "wb") as f:
+        with open(f"{self.path}/textures/{identifier}.png", "wb") as f:
             f.write(data)
-        self.terrain_texture["texture_data"][filename] = {
-            "textures": f"textures/blocks/{filename}"
+        self.terrain_texture["texture_data"][identifier] = {
+            "textures": f"textures/{identifier}"
         }
+
+    def delectTexture(self, identifier):
+        file_path = f"{self.path}/{self.terrain_texture['texture_data'][identifier]['textures']}.png"
+        os.remove(file_path)
+        self.terrain_texture["texture_data"].pop(identifier)
 
     def save(self):
         lang = {}

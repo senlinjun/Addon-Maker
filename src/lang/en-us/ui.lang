@@ -55,3 +55,6 @@ edit=Edit
 list_value=Value
 list_value_type=Type
 select_all=Select All
+input_texture_identifier=Input the identifier of the texture
+error_repeat=Cannot repeat
+want_delete=You want to delete:

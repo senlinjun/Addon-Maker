@@ -82,6 +82,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.rename()
         self.bind()
         self.updateContentList()
+        self.showImportItems()
 
     def rename(self):
         self.uiSystem.setWindowTitle(
@@ -166,6 +167,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         ]:
             l.itemClicked.connect(self.showComponent)
         self.modifyComponents.clicked.connect(self.clickedModifyComponent)
+        self.import_button.clicked.connect(self.importTexture)
+        self.delete_button.clicked.connect(self.deleteImportItem)
 
     def addContent(self):
         current_text = self.content_tab.tabText(self.content_tab.currentIndex())
@@ -332,8 +335,8 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             rsize += component_ui_size
             self.resource_layout.addWidget(group_box)
 
-        self.behavior_scrollAreaWidgetContents.setGeometry(0, 0, 340, bsize)
-        self.resource_scrollAreaWidgetContents.setGeometry(0, 0, 340, rsize)
+        self.behavior_scrollAreaWidgetContents.setGeometry(0, 0, 650, bsize)
+        self.resource_scrollAreaWidgetContents.setGeometry(0, 0, 650, rsize)
 
     def setComponentUi(
         self,
@@ -549,6 +552,98 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
     def listEdited(self, list_name, list_):
         self.component_ui["properties"][list_name].component_list = list_
         self.componentChanged(self.component_ui["properties"][list_name])
+
+    def importTexture(self):
+        file_path = QFileDialog.getOpenFileName(
+            self.uiSystem,
+            self.uiSystem.MainSystem.lang["ui", "open"],
+            filter="'png(*.png)'",
+        )[0]
+        if file_path == "":
+            return
+        file_name = "".join(file_path.split("/")[-1].split(".")[:-1])
+        input_ = QInputDialog.getText(
+            self.uiSystem,
+            self.uiSystem.MainSystem.lang["ui", "input"],
+            self.uiSystem.MainSystem.lang["ui", "input_texture_identifier"],
+            text=file_name,
+        )
+        if not input_[1]:
+            return
+        identifier = input_[0]
+        if (
+            identifier
+            in self.uiSystem.MainSystem.project_object.resourcePack.terrain_texture[
+                "texture_data"
+            ]
+        ):
+            QMessageBox.critical(
+                self.uiSystem,
+                self.uiSystem.MainSystem.lang["ui", "error"],
+                self.uiSystem.MainSystem.lang["ui", "error_repeat"],
+            )
+            return
+        self.uiSystem.MainSystem.project_object.resourcePack.addTexture(
+            file_path, identifier
+        )
+        self.showImportItems()
+
+    def showImportItems(self):
+        self.clearLayout(self.textures_layout)
+        # textures
+        addon_obj = self.uiSystem.MainSystem.project_object
+        img_info = []
+        for texture_identifier in addon_obj.resourcePack.terrain_texture[
+            "texture_data"
+        ]:
+            file_path = f"{addon_obj.resourcePack.path}/{addon_obj.resourcePack.terrain_texture['texture_data'][texture_identifier]['textures']}.png"
+            img_info.append((texture_identifier, file_path))
+
+        number = int(300 / 100)
+        for row in range(0, int(len(img_info) / number) + 1):
+            for column in range(max(0, min(len(img_info) - row * number, number))):
+                identifier, file_path = img_info[row * number + column]
+                layout = QtWidgets.QVBoxLayout()
+                layout.setObjectName("layout")
+                img = QtWidgets.QLabel(self.textrues_scrollAreaWidgetContents)
+                img.setObjectName("img")
+                img.setAlignment(Qt.AlignCenter)
+                png = QtGui.QPixmap(file_path).scaled(65, 65)
+                img.setPixmap(png)
+                layout.addWidget(img)
+                identifier_label = QtWidgets.QLabel(
+                    self.textrues_scrollAreaWidgetContents
+                )
+                identifier_label.setObjectName("identifier")
+                identifier_label.setAlignment(Qt.AlignCenter)
+                identifier_label.setText(identifier)
+                layout.addWidget(identifier_label)
+                self.textures_layout.addLayout(layout, row, column, 1, 1)
+        width = number * 100
+        if len(img_info) < number:
+            width = len(img_info) * 100
+        row = len(img_info) / number
+        if len(img_info) % number > 0:
+            row += 1
+        self.textrues_scrollAreaWidgetContents.setGeometry(0, 0, width, row * 90)
+
+    def deleteImportItem(self):
+        addon_obj = self.uiSystem.MainSystem.project_object
+        textures_identifier = [
+            identifier
+            for identifier in addon_obj.resourcePack.terrain_texture["texture_data"]
+        ]
+        input_ = QInputDialog.getItem(
+            self.uiSystem,
+            self.uiSystem.MainSystem.lang["ui", "input"],
+            self.uiSystem.MainSystem.lang["ui", "want_delete"],
+            textures_identifier,
+            editable=False,
+        )
+        if not input_[1]:
+            return
+        addon_obj.resourcePack.delectTexture(input_[0])
+        self.showImportItems()
 
 
 class AddonSetting(addon_setting.Ui_MainWindow, UiBasic):
