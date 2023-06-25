@@ -1,5 +1,6 @@
-import os,json
+import os, json
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
 
 
 def buildDirectories(path, directories):
@@ -13,7 +14,7 @@ def buildDirectories(path, directories):
 
 
 def getBedrockGameVersionsList():
-    with open("./data/versions.json","r") as f:
+    with open("./data/versions.json", "r") as f:
         return_dict = json.load(f)
     return return_dict
 
@@ -39,7 +40,7 @@ def compressDir(dir_path, zip_obj, prefix=""):
 
 
 def getWidgetValue(widget):
-    if isinstance(widget, QtWidgets.QCheckBox):  # bool
+    if isinstance(widget, QtWidgets.QCheckBox) and not widget.isTristate():  # bool
         return widget.isChecked()
     if isinstance(widget, QtWidgets.QSpinBox):  # int
         return widget.value()
@@ -51,6 +52,13 @@ def getWidgetValue(widget):
         return widget.toPlainText()
     if isinstance(widget, QtWidgets.QComboBox):  # list(comboBox)
         return widget.currentText()
+    if isinstance(widget, QtWidgets.QCheckBox) and widget.isTristate():  # tristate
+        state = widget.checkState()
+        if state == Qt.Unchecked:
+            return 0
+        if state == Qt.PartiallyChecked:
+            return 1
+        return 2
 
 
 class Language:
@@ -68,12 +76,23 @@ class Language:
             if file == "language":
                 with open(f"lang/{id}/language", "r", encoding="utf-8") as f:
                     for line in f.readlines():
-                        line = line[:-1]
+                        if line.find("=") == -1:
+                            continue
+                        index = line.find("//")
+                        if index != -1:
+                            line = line[:index]
+                        if line[-1] == "\n":
+                            line = line[:-1]
                         key, value = line.split("=")
                         self.lang_info[key] = value
 
             with open(f"lang/{id}/{file}", "r", encoding="utf-8") as f:
                 for line in f.readlines():
+                    if line.find("=") == -1:
+                        continue
+                    index = line.find("//")
+                    if index != -1:
+                        line = line[:index]
                     if "=" not in line:
                         continue
                     if line[-1] == "\n":

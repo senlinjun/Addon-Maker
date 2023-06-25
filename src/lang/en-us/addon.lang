@@ -1,3 +1,4 @@
+// Behavior
 minecraft:collision_box_description=Defines the area of the block that collides with entities. If set to true, default values are used. If set to false, the block's collision with entities is disabled. If this component is omitted, default values are used.
 minecraft:collision_box_name=Collision Box
 minecraft:collision_box_enable=Enable
@@ -44,3 +45,17 @@ properties_ask_new=Type new property
 properties_ask_remove=Select the property you want to delete
 register_to_creative_menu_name=Register To Creative Menu
 register_to_creative_menu_description=Sets whether this block appears in the Creative inventory. (Bedrock version 1.15.0 so far due to unknown reasons caused this API failure, to be repaired)
+// Resource
+sound_name=Sound
+sound_description=Define the sound effects for this block
+down=Down
+side=Side
+up=Up
+east=East
+north=North
+south=South
+west=West
+isotropic_name=Isotropic
+isotropic_description=Define whether the texture for each face of the block rotates randomly
+brightness_gamma_name=Brightness Gamma
+brightness_gamma_description=Set the brightness of the block texture

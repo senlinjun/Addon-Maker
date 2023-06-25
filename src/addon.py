@@ -1,10 +1,9 @@
 # Bedrock
 import time
 import uuid
-import json
 import zipfile
 from lib import *
-from data.addon import BlockBehavior
+from data.addon import BlockBehavior, BlockResource
 
 
 class BehaviorPack:
@@ -51,7 +50,7 @@ class BehaviorPack:
             block = self.addon.blocks[f"{namespace}:{id}"]
             block.namespace = namespace
             block.id = id
-            block.behavior_data = f"{namespace}:{id}"
+            block.identifier = f"{namespace}:{id}"
             block.behavior_data = block_data
             for component in block_data["minecraft:block"]["description"]:
                 if component in BlockBehavior.components:
@@ -61,7 +60,7 @@ class BehaviorPack:
                     component_obj.parse(
                         block_data["minecraft:block"]["description"][component]
                     )
-                    block.components[component] = component_obj
+                    block.behavior_components[component] = component_obj
             for component in block_data["minecraft:block"]["components"]:
                 if component in BlockBehavior.components:
                     component_obj = BlockBehavior.components[component](
@@ -70,7 +69,7 @@ class BehaviorPack:
                     component_obj.parse(
                         block_data["minecraft:block"]["components"][component]
                     )
-                    block.components[component] = component_obj
+                    block.behavior_components[component] = component_obj
 
 
 class ResourcePack:
@@ -118,9 +117,12 @@ class ResourcePack:
         blocks_json = {"format_version": "1.19.30"}
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
-            blocks_json[block.identifier] = block.resource_data
-            if block.name is not None:
-                lang[f"tile.{identifier}.name"] = block.name
+            block.generateResourceData()
+            block_data = block.resource_data
+            if "name" in block_data:
+                lang[f"tile.{identifier}.name"] = block_data["name"]
+                continue
+            blocks_json[identifier] = block_data
         with open(f"{self.path}/blocks.json", "w") as f:
             json.dump(blocks_json, f, indent=1)
 
@@ -142,8 +144,14 @@ class ResourcePack:
             blocks_data = json.load(f)
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
-            block.identifier = identifier
             block.resource_data = blocks_data[identifier]
+            for component_identifier in block.resource_data:
+                if component_identifier in BlockResource.components:
+                    component = BlockResource.components[component_identifier](
+                        block, self.addon.MainSystem.ui
+                    )
+                    component.parse(block.resource_data[component_identifier])
+                    block.resource_components[component_identifier] = component
 
         # lang
         with open(f"{self.path}/texts/{self.lang}.lang", "r", encoding="utf-8") as f:
@@ -154,7 +162,13 @@ class ResourcePack:
                     continue
                 key, value = line.split("=")
                 identifier = key.split(".")[1]
-                self.addon.blocks[identifier].name = value
+                block = self.addon.blocks[identifier]
+                if "name" in BlockResource.components:
+                    component = BlockResource.components["name"](
+                        block, self.addon.MainSystem.ui
+                    )
+                    component.parse(value)
+                    block.resource_components["name"] = component
 
 
 class Block:
@@ -164,8 +178,8 @@ class Block:
         self.id = ""
         self.behavior_data = {}
         self.resource_data = {}
-        self.components = {}
-        self.name = None
+        self.behavior_components = {}
+        self.resource_components = {}
         self.identifier = ""
 
     def new(self, namespace, id):
@@ -192,11 +206,15 @@ class Block:
                 "components": {},
             },
         }
-        for component_identifier in self.components:
-            component = self.components[component_identifier]
+        for component_identifier in self.behavior_components:
+            component = self.behavior_components[component_identifier]
             component.write(self.behavior_data)
 
-    # TODO Resource
+    def generateResourceData(self):
+        self.resource_data = {}
+        for component_identifier in self.resource_components:
+            component = self.resource_components[component_identifier]
+            component.write(self.resource_data)
 
     def getBehaviorComponents(self):
         back_dict = {}
@@ -206,12 +224,21 @@ class Block:
                 "description": self.addon.MainSystem.lang[
                     "addon", f"{component}_description"
                 ],
-                "is_checked": component in self.components,
+                "is_checked": component in self.behavior_components,
             }
         return back_dict
 
-    def removeBehaviorComponent(self, component_identifier):
-        self.components.pop(component_identifier)
+    def getResourceComponents(self):
+        back_dict = {}
+        for component in BlockResource.components:
+            back_dict[component] = {
+                "name": self.addon.MainSystem.lang["addon", f"{component}_name"],
+                "description": self.addon.MainSystem.lang[
+                    "addon", f"{component}_description"
+                ],
+                "is_checked": component in self.resource_components,
+            }
+        return back_dict
 
 
 class BedrockAddon:

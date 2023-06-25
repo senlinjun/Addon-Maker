@@ -37,3 +37,17 @@ is_experimental_name=实验性方块
 is_experimental_description=决定了该方块是否为实验性方块。默认值为 false 。若此属性值为 true ，则该方块需开启实验性玩法才可获得。
 register_to_creative_menu_name=出现于创造模式物品栏
 register_to_creative_menu_description=设置此方块是否出现在创造模式物品栏。（基岩版1.15.0至今由于不明原因导致此API失效，待修复）
+// Resource
+sound_name=音效
+sound_description=定义该方块的音效
+down=下面
+side=四周
+up=上面
+east=东面
+north=北面
+south=南面
+west=西面
+isotropic_name=贴图随机旋转
+isotropic_description=定义方块每个面的贴图是否随机旋转
+brightness_gamma_name=亮度伽马值
+brightness_gamma_description=设置方块贴图的亮度

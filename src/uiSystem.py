@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
 )
+from data.addon import BlockBehavior, BlockResource
 
 from ui import start, addonUi, addon_setting, ask_components, setting, ask_list
 
@@ -281,11 +282,12 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         content = self.getSelectContent()
         if content is None:
             return
-        size = 20
+        bsize = 20
+        rsize = 20
         self.component_ui = {}
         content_type, content = content
-        for component_identifier in content.components:
-            component_data_obj = content.components[component_identifier]
+        for component_identifier in content.behavior_components:
+            component_data_obj = content.behavior_components[component_identifier]
             ui_dict = component_data_obj.getUiDict()
             group_box = QtWidgets.QGroupBox(self.behavior_scrollAreaWidgetContents)
             group_box.setObjectName("groupBox")
@@ -298,15 +300,48 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 self.component_ui[component_identifier],
                 component_ui_size,
             ) = self.setComponentUi(
-                group_box, form_layout, ui_dict, component_data_obj.identifier
+                group_box,
+                form_layout,
+                ui_dict,
+                component_data_obj.identifier,
+                "behavior",
             )
-            size += component_ui_size
+            bsize += component_ui_size
             self.behavior_layout.addWidget(group_box)
 
-        self.behavior_scrollAreaWidgetContents.setGeometry(0, 0, 340, size)
+        for component_identifier in content.resource_components:
+            component_data_obj = content.resource_components[component_identifier]
+            ui_dict = component_data_obj.getUiDict()
+            group_box = QtWidgets.QGroupBox(self.resource_scrollAreaWidgetContents)
+            group_box.setObjectName("groupBox")
+            group_box.setTitle(
+                self.uiSystem.MainSystem.lang["addon", f"{component_identifier}_name"]
+            )
+            form_layout = QtWidgets.QFormLayout(group_box)
+            form_layout.setObjectName("formLayout")
+            (
+                self.component_ui[component_identifier],
+                component_ui_size,
+            ) = self.setComponentUi(
+                group_box,
+                form_layout,
+                ui_dict,
+                component_data_obj.identifier,
+                "resource",
+            )
+            rsize += component_ui_size
+            self.resource_layout.addWidget(group_box)
+
+        self.behavior_scrollAreaWidgetContents.setGeometry(0, 0, 340, bsize)
+        self.resource_scrollAreaWidgetContents.setGeometry(0, 0, 340, rsize)
 
     def setComponentUi(
-        self, group_box, form_layout, data_dict: dict, component_identifier: str
+        self,
+        group_box,
+        form_layout,
+        data_dict: dict,
+        component_identifier: str,
+        component_pack: str,
     ):
         size = 30  # groupBox所占的30px
         count = 0
@@ -326,7 +361,11 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                 new_form_layout = QtWidgets.QFormLayout(new_group_box)
                 new_form_layout.setObjectName("formLayout")
                 child, child_size = self.setComponentUi(
-                    new_group_box, new_form_layout, data_dict[key], component_identifier
+                    new_group_box,
+                    new_form_layout,
+                    data_dict[key],
+                    component_identifier,
+                    component_pack,
                 )
                 field = new_group_box
                 size += child_size
@@ -393,6 +432,18 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                     k = key
                     field.clicked.connect(lambda: self.editList(k, value))
 
+                elif value_type == "tristate":
+                    field = QtWidgets.QCheckBox(group_box)
+                    field.setObjectName("checkBox")
+                    field.setTristate()
+                    if value == 0:
+                        field.setCheckState(Qt.Unchecked)
+                    elif value == 1:
+                        field.setCheckState(Qt.PartiallyChecked)
+                    elif value == 2:
+                        field.setCheckState(Qt.Checked)
+                    field.stateChanged.connect(lambda: self.componentChanged(field))
+
                 if field is None:
                     field = QtWidgets.QLabel(group_box)
                     field.setObjectName("label")
@@ -401,6 +452,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                     )
 
             field.identifier = component_identifier
+            field.pack = component_pack
             form_layout.setWidget(count, QtWidgets.QFormLayout.FieldRole, field)
             if child is None:
                 data_ui_dict[key] = field
@@ -427,9 +479,14 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         content_adj = self.getSelectContent()
         if content_adj is None:
             return
-        component_data_obj = content_adj[1].components[item.identifier]
-        component_data_obj.parseFromUi(ui_dict)
-        self.showComponent()
+        component_data_obj = None
+        if item.pack == "behavior":
+            component_data_obj = content_adj[1].behavior_components[item.identifier]
+        elif item.pack == "resource":
+            component_data_obj = content_adj[1].resource_components[item.identifier]
+        if component_data_obj is not None:
+            component_data_obj.parseFromUi(ui_dict)
+            self.showComponent()
 
     def clickedModifyComponent(self):
         content = self.getSelectContent()
@@ -437,9 +494,13 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return
         content_type, content = content
 
-        dialog = AskComponent(
-            content.getBehaviorComponents(), self.modifyComponentCallback
-        )
+        tab_index = self.data_tab.currentIndex()
+        component_dict = {}
+        if tab_index == 0:
+            component_dict = content.getBehaviorComponents()
+        elif tab_index == 1:
+            component_dict = content.getResourceComponents()
+        dialog = AskComponent(component_dict, self.modifyComponentCallback)
         self.uiSystem.showDialog(dialog)
         dialog.showComponents()
 
@@ -448,17 +509,34 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         if content is None:
             return
         content_type, content = content
-        for component_data in component_dict:
+        tab_index = self.data_tab.currentIndex()
+        components = {}
+        if tab_index == 0:
+            components = content.behavior_components
+        elif tab_index == 1:
+            components = content.resource_components
+        for component_identifier in component_dict:
             if (
-                component_data in content.components
-                and not component_dict[component_data]
+                component_identifier in components
+                and not component_dict[component_identifier]
             ):
-                content.components.pop(component_data)
+                components.pop(component_identifier)
             elif (
-                component_data not in content.components
-                and component_dict[component_data]
+                component_identifier not in components
+                and component_dict[component_identifier]
             ):
-                content.addBehaviorComponent(component_data)
+                if tab_index == 0:
+                    components[component_identifier] = BlockBehavior.components[
+                        component_identifier
+                    ](content, self.uiSystem)
+                elif tab_index == 1:
+                    components[component_identifier] = BlockResource.components[
+                        component_identifier
+                    ](content, self.uiSystem)
+        if tab_index == 0:
+            content.behavior_components = components
+        elif tab_index == 1:
+            content.resource_components = components
         self.showComponent()
 
     def drop(self, file):
@@ -810,6 +888,8 @@ class AskList(ask_list.Ui_Dialog, UiBasic):
             elif isinstance(item, int):
                 widget = QtWidgets.QSpinBox(self.table)
                 widget.setValue(item)
+                widget.setMaximum(10000000)
+                widget.setMinimum(-10000000)
                 widget.valueChanged.connect(self.widgetChanged)
                 item_type.setCurrentText("int")
             else:

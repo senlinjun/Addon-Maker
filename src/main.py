@@ -58,6 +58,11 @@ class MainSystem:
         self.config = {}
         with open("config", "r") as f:
             for line in f.readlines():
+                if line.find("=") == -1:
+                    continue
+                index = line.find("//")
+                if index != -1:
+                    line = line[:index]
                 if line[-1] == "\n":
                     line = line[:-1]
                 key, value = line.split("=")
