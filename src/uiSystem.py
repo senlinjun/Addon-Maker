@@ -120,6 +120,9 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
         self.actionOpen.setText(self.uiSystem.MainSystem.lang["ui", "open"])
         self.actionSave.setText(self.uiSystem.MainSystem.lang["ui", "save"])
         self.actionExport.setText(self.uiSystem.MainSystem.lang["ui", "export"])
+        self.imported_items_tab.setTabText(
+            0, self.uiSystem.MainSystem.lang["ui", "textures"]
+        )
         self.showComponent()
 
     def updateContentList(self):
@@ -417,6 +420,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
                         field = QtWidgets.QComboBox(group_box)
                         field.setObjectName("comboBox")
                         field.addItems(args)
+                        field.setCurrentText(value)
                         field.currentIndexChanged.connect(
                             lambda: self.componentChanged(field)
                         )
@@ -587,6 +591,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             file_path, identifier
         )
         self.showImportItems()
+        self.showComponent()
 
     def showImportItems(self):
         self.clearLayout(self.textures_layout)
@@ -644,6 +649,7 @@ class AddonUi(addonUi.Ui_MainWindow, UiBasic):
             return
         addon_obj.resourcePack.delectTexture(input_[0])
         self.showImportItems()
+        self.showComponent()
 
 
 class AddonSetting(addon_setting.Ui_MainWindow, UiBasic):

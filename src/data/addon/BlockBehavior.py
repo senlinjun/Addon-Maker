@@ -672,9 +672,9 @@ class Properties(BasicComponent):
 
 
 class RegisterToCreativeMenu(BasicComponent):
-    def __init__(self, content):
+    def __init__(self, content, ui_system):
         super(RegisterToCreativeMenu, self).__init__(
-            "register_to_creative_menu", content
+            "register_to_creative_menu", content, ui_system
         )
         self.lang = self.content.addon.MainSystem.lang
         self.value = False

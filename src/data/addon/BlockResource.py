@@ -178,8 +178,212 @@ class BrightnessGamma(BasicComponent):
         )
 
 
+class Textures(BasicComponent):
+    def __init__(self, content, ui_system):
+        super(Textures, self).__init__("textures", content, ui_system)
+        self.lang = self.content.addon.MainSystem.lang
+        self.textures = {
+            "up": self.lang["addon", "textures_none"],
+            "down": self.lang["addon", "textures_none"],
+        }
+        self.same = False
+        self.texture = self.lang["addon", "textures_none"]
+        self.side_faces = {
+            "east": self.lang["addon", "textures_none"],
+            "north": self.lang["addon", "textures_none"],
+            "south": self.lang["addon", "textures_none"],
+            "west": self.lang["addon", "textures_none"],
+        }
+        self.side_same = True
+        self.side = self.lang["addon", "textures_none"]
+
+    def parse(self, component_value):
+        if isinstance(component_value, str):
+            self.same = True
+            self.side_same = True
+            self.texture = component_value
+            self.side = component_value
+        elif isinstance(component_value, dict):
+            for face in self.textures:
+                if face in component_value:
+                    self.textures[face] = component_value[face]
+            if "side" in component_value:
+                self.side_same = True
+                self.side = component_value["side"]
+            for face in self.side_faces:
+                if face in component_value:
+                    self.side_faces[face] = component_value[face]
+                    self.side_same = False
+
+    def generate(self):
+        if self.same:
+            return self.texture
+        return_dict = {}
+
+        for face in self.textures:
+            if self.textures[face] != self.lang["addon", "textures_none"]:
+                return_dict[face] = self.textures[face]
+        if self.side_same and self.side != self.lang["addon", "textures_none"]:
+            return_dict["side"] = self.side
+        else:
+            for face in self.side_faces:
+                if self.side_faces[face] != self.lang["addon", "textures_none"]:
+                    return_dict[face] = self.side_faces[face]
+        return return_dict
+
+    def getUiDict(self):
+        addon = self.ui_system.MainSystem.project_object
+        textures = [
+            identifier
+            for identifier in addon.resourcePack.terrain_texture["texture_data"].keys()
+        ]
+        textures.insert(0, self.lang["addon", "textures_none"])
+        if self.same:
+            return_dict = {
+                self.lang["addon", "textures_same"]: (self.same, "bool", None),
+                self.lang["addon", "textures_name"]: (
+                    self.texture,
+                    "combobox",
+                    textures,
+                ),
+            }
+        else:
+            return_dict = {
+                self.lang["addon", "textures_same"]: (self.same, "bool", None),
+                self.lang["addon", "up"]: (self.textures["up"], "combobox", textures),
+                self.lang["addon", "down"]: (
+                    self.textures["down"],
+                    "combobox",
+                    textures,
+                ),
+            }
+            if self.side_same:
+                return_dict[self.lang["addon", "side"]] = {
+                    self.lang["addon", "textures_same"]: (self.side_same, "bool", None),
+                    self.lang["addon", "textures_name"]: (
+                        self.side,
+                        "combobox",
+                        textures,
+                    ),
+                }
+            else:
+                return_dict[self.lang["addon", "side"]] = {
+                    self.lang["addon", "textures_same"]: (self.side_same, "bool", None),
+                }
+                for face in self.side_faces:
+                    return_dict[self.lang["addon", "side"]][
+                        self.lang["addon", face]
+                    ] = (self.side_faces[face], "combobox", textures)
+        return return_dict
+
+    def write(self, pack_dict):
+        pack_dict[self.identifier] = self.generate()
+
+    def parseFromUi(self, ui_dict):
+        self.same = lib.getWidgetValue(ui_dict[self.lang["addon", "textures_same"]])
+        if self.same and self.lang["addon", "textures_name"] in ui_dict:
+            self.texture = lib.getWidgetValue(
+                ui_dict[self.lang["addon", "textures_name"]]
+            )
+            print(self.texture)
+        else:
+            if self.lang["addon", "up"] in ui_dict:
+                self.textures["up"] = lib.getWidgetValue(
+                    ui_dict[self.lang["addon", "up"]]
+                )
+                self.textures["down"] = lib.getWidgetValue(
+                    ui_dict[self.lang["addon", "down"]]
+                )
+                self.side_same = lib.getWidgetValue(
+                    ui_dict[self.lang["addon", "side"]][
+                        self.lang["addon", "textures_same"]
+                    ]
+                )
+                if (
+                    self.side_same
+                    and self.lang["addon", "textures_name"]
+                    in ui_dict[self.lang["addon", "side"]]
+                ):
+                    self.side = lib.getWidgetValue(
+                        ui_dict[self.lang["addon", "side"]][
+                            self.lang["addon", "textures_name"]
+                        ]
+                    )
+                else:
+                    if (
+                        self.lang["addon", "north"]
+                        in ui_dict[self.lang["addon", "side"]]
+                    ):
+                        for face in self.side_faces:
+                            self.side_faces[face] = lib.getWidgetValue(
+                                ui_dict[self.lang["addon", "side"]][
+                                    self.lang["addon", face]
+                                ]
+                            )
+
+
+class CarriedTextures(BasicComponent):
+    def __init__(self, content, ui_system):
+        super(CarriedTextures, self).__init__("carried_textures", content, ui_system)
+        self.lang = self.content.addon.MainSystem.lang
+        self.texture = self.lang["addon", "texture_none"]
+
+    def parse(self, component_value):
+        self.texture = component_value
+
+    def generate(self):
+        return self.texture
+
+    def getUiDict(self):
+        addon = self.ui_system.MainSystem.project_object
+        textures = [
+            identifier
+            for identifier in addon.resourcePack.terrain_texture["texture_data"].keys()
+        ]
+        return {
+            self.lang["addon", "carried_textures_name"]: (
+                self.texture,
+                "combobox",
+                textures,
+            )
+        }
+
+    def write(self, pack_dict):
+        pack_dict[self.identifier] = self.generate()
+
+    def parseFromUi(self, ui_dict):
+        self.texture = lib.getWidgetValue(
+            ui_dict[self.lang["addon", "carried_textures_name"]]
+        )
+
+
+class Name(BasicComponent):
+    def __init__(self, content, ui_system):
+        super(Name, self).__init__("name", content, ui_system)
+        self.lang = self.content.addon.MainSystem.lang
+        self.name = ""
+
+    def parse(self, component_value):
+        self.name = component_value
+
+    def generate(self):
+        return self.name
+
+    def getUiDict(self):
+        return {self.lang["addon", "name_name"]: (self.name, "str", None)}
+
+    def write(self, pack_dict):
+        pack_dict[self.identifier] = self.generate()
+
+    def parseFromUi(self, ui_dict):
+        self.name = lib.getWidgetValue(ui_dict[self.lang["addon", "name_name"]])
+
+
 components = {
     "sound": Sound,
     "isotropic": Isotropic,
     "brightness_gamma": BrightnessGamma,
+    "textures": Textures,
+    "carried_textures": CarriedTextures,
+    "name": Name,
 }

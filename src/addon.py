@@ -125,7 +125,7 @@ class ResourcePack:
             block_data = block.resource_data
             if "name" in block_data:
                 lang[f"tile.{identifier}.name"] = block_data["name"]
-                continue
+                block_data.pop("name")
             blocks_json[identifier] = block_data
         with open(f"{self.path}/blocks.json", "w") as f:
             json.dump(blocks_json, f, indent=1)
@@ -148,7 +148,8 @@ class ResourcePack:
             blocks_data = json.load(f)
         for identifier in self.addon.blocks:
             block = self.addon.blocks[identifier]
-            block.resource_data = blocks_data[identifier]
+            if identifier in blocks_data:
+                block.resource_data = blocks_data[identifier]
             for component_identifier in block.resource_data:
                 if component_identifier in BlockResource.components:
                     component = BlockResource.components[component_identifier](

@@ -58,3 +58,4 @@ select_all=Select All
 input_texture_identifier=Input the identifier of the texture
 error_repeat=Cannot repeat
 want_delete=You want to delete:
+textures=Textures
