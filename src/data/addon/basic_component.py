@@ -3,6 +3,7 @@ class BasicComponent:
         self.identifier = identifier
         self.content = content
         self.ui_system = ui_system
+        self.lang = self.content.addon.MainSystem.lang
 
     def parse(self, component_value):
         pass
@@ -16,5 +17,5 @@ class BasicComponent:
     def getUiDict(self):
         pass
 
-    def parseFromUi(self):
+    def parseFromUi(self, ui_dict):
         pass

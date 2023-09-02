@@ -59,3 +59,7 @@ input_texture_identifier=输入此材质的标识符
 error_repeat=不能重复
 want_delete=你想要删除:
 textures=贴图
+events=事件
+components=组件
+trigger=触发器
+event_response=响应事件

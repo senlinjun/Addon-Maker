@@ -1,3 +1,4 @@
+// Behavior_component
 minecraft:collision_box_description=定义与实体碰撞的方块的面积。如果设置为true，则使用默认值。如果设置为false，块与实体的碰撞将被禁用。如果省略该组件，则使用默认值。
 minecraft:collision_box_name=实体碰撞箱
 minecraft:collision_box_enable=启用
@@ -66,3 +67,27 @@ carried_textures_name=物品栏贴图
 carried_textures_description=定义方块在物品栏的贴图
 name_name=方块名称
 name_description=设置该方块的语言文件
+// Behavior_event
+condition=触发条件
+event=事件
+target=执行目标
+minecraft:on_fall_on_name=落在方块上
+minecraft:on_fall_on_description=当对象落在方块上触发
+minecraft:on_fall_on_min_fall_distance=最小掉落距离
+minecraft:on_interact_name=与方块互动
+minecraft:on_interact_description=当对象与方块互动时触发
+minecraft:on_placed_name=已经放下方块
+minecraft:on_placed_description=当对象放下方块时触发
+minecraft:on_player_destroyed_name=玩家破坏方块
+minecraft:on_player_destroyed_description=当玩家把一个方块破坏后触发事件
+minecraft:on_player_placing_name=放下方块
+minecraft:on_player_placing_description=当玩家正在放下方块时触发
+minecraft:on_step_on_name=踩在方块上
+minecraft:on_step_on_description=当对象踩在方块上时触发
+minecraft:on_step_off_name=离开方块
+minecraft:on_step_off_description=当对象从方块上离开方块时触发
+add_mob_effect_name=给生物添加效果
+add_mob_effect_description=给一个目标某个效果
+add_mob_effect_amplifier=效果级别
+add_mob_effect_duration=持续时间
+add_mob_effect_effect=效果

@@ -1,6 +1,7 @@
 import os, json
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog
 
 
 def buildDirectories(path, directories):
@@ -73,32 +74,8 @@ class Language:
         self.lang_info = {}
         self.id = id
         for file in os.listdir(f"lang/{id}"):
-            if file == "language":
-                with open(f"lang/{id}/language", "r", encoding="utf-8") as f:
-                    for line in f.readlines():
-                        if line.find("=") == -1:
-                            continue
-                        index = line.find("//")
-                        if index != -1:
-                            line = line[:index]
-                        if line[-1] == "\n":
-                            line = line[:-1]
-                        key, value = line.split("=")
-                        self.lang_info[key] = value
-
-            with open(f"lang/{id}/{file}", "r", encoding="utf-8") as f:
-                for line in f.readlines():
-                    if line.find("=") == -1:
-                        continue
-                    index = line.find("//")
-                    if index != -1:
-                        line = line[:index]
-                    if "=" not in line:
-                        continue
-                    if line[-1] == "\n":
-                        line = line[:-1]
-                    key, value = line.split("=")
-                    self.lang[f"{file.replace('.lang','')}_{key}"] = value
+            for key, value in readDataFromFile(f"lang/{id}/{file}"):
+                self.lang[f"{file.replace('.lang','')}_{key}"] = value
         self.lang_keys = self.lang.keys()
 
     def __getitem__(self, t):
@@ -106,3 +83,43 @@ class Language:
         if f"{module}_{lang_id}" in self.lang_keys:
             return self.lang[f"{module}_{lang_id}"]
         return f"{module}_{lang_id}"
+
+
+def clearLayout(layout):
+    item_list = list(range(layout.count()))
+    item_list.reverse()
+
+    for i in item_list:
+        item = layout.itemAt(i)
+        layout.removeItem(item)
+        if item.widget():
+            item.widget().deleteLater()
+        else:
+            clearLayout(item)
+
+
+class Dialog(QDialog):
+    def __init__(self, parent, dialog_list, dialog_ui_list):
+        self.dialog_list = dialog_list
+        self.dialog_ui_list = dialog_ui_list
+        super(Dialog, self).__init__(parent)
+
+    def close(self) -> bool:
+        index = self.dialog_list.index(self)
+        self.dialog_list.pop(index)
+        self.dialog_ui_list.pop(index)
+        return super(Dialog, self).close()
+
+
+def readDataFromFile(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        for line in f.readlines():
+            if line.find("=") == -1:
+                continue
+            index = line.find("//")
+            if index != -1:
+                line = line[:index]
+            if line[-1] == "\n":
+                line = line[:-1]
+            key, value = line.split("=")
+            yield key, value

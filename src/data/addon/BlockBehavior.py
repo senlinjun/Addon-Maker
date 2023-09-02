@@ -11,7 +11,6 @@ class CollisionBox(BasicComponent):
         self.enable = True
         self.origin_x, self.origin_y, self.origin_z = -8.0, 0.0, -8.0
         self.size_x, self.size_y, self.size_z = 16.0, 16.0, 16.0
-        self.lang = self.content.addon.MainSystem.lang
 
     def parse(self, component_value):
         if isinstance(component_value, bool):
@@ -109,7 +108,7 @@ class DestructibleByExplosion(BasicComponent):
         super(DestructibleByExplosion, self).__init__(
             "minecraft:destructible_by_explosion", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.enable = True
         self.explosion_resistance = 0.0
 
@@ -181,7 +180,7 @@ class DestructibleByMining(BasicComponent):
         super(DestructibleByMining, self).__init__(
             "minecraft:destructible_by_mining", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.enable = True
         self.seconds_to_destroy = 0.0
 
@@ -244,7 +243,7 @@ class DestructibleByMining(BasicComponent):
 class DisplayName(BasicComponent):
     def __init__(self, content, ui_system):
         super(DisplayName, self).__init__("minecraft:display_name", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.name = ""
 
     def parse(self, component_value):
@@ -270,7 +269,7 @@ class DisplayName(BasicComponent):
 class Flammable(BasicComponent):
     def __init__(self, content, ui_system):
         super(Flammable, self).__init__("minecraft:flammable", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.enable = False
         self.catch_chance_modifier = 5
         self.destroy_chance_modifier = 20
@@ -349,7 +348,7 @@ class Flammable(BasicComponent):
 class Friction(BasicComponent):
     def __init__(self, content, ui_system):
         super(Friction, self).__init__("minecraft:friction", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.friction = 0.6
 
     def parse(self, component_value):
@@ -379,7 +378,7 @@ class Friction(BasicComponent):
 class MapColor(BasicComponent):
     def __init__(self, content, ui_system):
         super(MapColor, self).__init__("minecraft:map_color", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.color = "#FFFFFF"
 
     def parse(self, component_value):
@@ -405,7 +404,7 @@ class LightDampening(BasicComponent):
         super(LightDampening, self).__init__(
             "minecraft:light_dampening", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.value = 15
 
     def parse(self, component_value):
@@ -437,7 +436,7 @@ class LightEmission(BasicComponent):
         super(LightEmission, self).__init__(
             "minecraft:light_emission", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.value = 0
 
     def parse(self, component_value):
@@ -469,7 +468,7 @@ class SelectionBox(BasicComponent):
         super(SelectionBox, self).__init__(
             "minecraft:selection_box", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.origin_x, self.origin_y, self.origin_z = -8.0, 0.0, -8.0
         self.size_x, self.size_y, self.size_z = 16.0, 16.0, 16.0
         self.enable = True
@@ -568,7 +567,7 @@ class SelectionBox(BasicComponent):
 class IsExperimental(BasicComponent):
     def __init__(self, content, ui_system):
         super(IsExperimental, self).__init__("is_experimental", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.value = False
 
     def parse(self, component_value):
@@ -592,7 +591,7 @@ class IsExperimental(BasicComponent):
 class Properties(BasicComponent):
     def __init__(self, content, ui_system):
         super(Properties, self).__init__("properties", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.properties = {}
 
     def parse(self, component_value):
@@ -676,7 +675,7 @@ class RegisterToCreativeMenu(BasicComponent):
         super(RegisterToCreativeMenu, self).__init__(
             "register_to_creative_menu", content, ui_system
         )
-        self.lang = self.content.addon.MainSystem.lang
+
         self.value = False
 
     def parse(self, component_value):

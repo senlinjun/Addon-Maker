@@ -3,7 +3,7 @@ import time
 import uuid
 import zipfile
 from lib import *
-from data.addon import BlockBehavior, BlockResource
+from data.addon import BlockBehavior, BlockResource, BlockTrigger, BlockEventResponses
 
 
 class BehaviorPack:
@@ -61,15 +61,36 @@ class BehaviorPack:
                         block_data["minecraft:block"]["description"][component]
                     )
                     block.behavior_components[component] = component_obj
-            for component in block_data["minecraft:block"]["components"]:
-                if component in BlockBehavior.components:
-                    component_obj = BlockBehavior.components[component](
-                        block, self.addon.MainSystem.ui
-                    )
-                    component_obj.parse(
-                        block_data["minecraft:block"]["components"][component]
-                    )
-                    block.behavior_components[component] = component_obj
+            if "components" in block_data["minecraft:block"]:
+                for component in block_data["minecraft:block"]["components"]:
+                    if component in BlockBehavior.components:
+                        component_obj = BlockBehavior.components[component](
+                            block, self.addon.MainSystem.ui
+                        )
+                        component_obj.parse(
+                            block_data["minecraft:block"]["components"][component]
+                        )
+                        block.behavior_components[component] = component_obj
+                    elif component in BlockTrigger.triggers:
+                        component_obj = BlockTrigger.triggers[component](
+                            block, self.addon.MainSystem.ui
+                        )
+                        component_obj.parse(
+                            block_data["minecraft:block"]["components"][component]
+                        )
+                        block.triggers[component] = component_obj
+            if "events" in block_data["minecraft:block"]:
+                for event in block_data["minecraft:block"]["events"]:
+                    block.events[event] = {}
+                    for response in block_data["minecraft:block"]["events"][event]:
+                        if response in BlockEventResponses.responses:
+                            component_obj = BlockEventResponses.responses[response](
+                                block, self.addon.MainSystem.ui, event
+                            )
+                            component_obj.parse(
+                                block_data["minecraft:block"]["events"][event][response]
+                            )
+                            block.events[event][response] = component_obj
 
 
 class ResourcePack:
@@ -103,7 +124,7 @@ class ResourcePack:
             "textures": f"textures/{identifier}"
         }
 
-    def delectTexture(self, identifier):
+    def deleteTexture(self, identifier):
         file_path = f"{self.path}/{self.terrain_texture['texture_data'][identifier]['textures']}.png"
         os.remove(file_path)
         self.terrain_texture["texture_data"].pop(identifier)
@@ -185,6 +206,8 @@ class Block:
         self.resource_data = {}
         self.behavior_components = {}
         self.resource_components = {}
+        self.triggers = {}
+        self.events = {}
         self.identifier = ""
 
     def new(self, namespace, id):
@@ -209,11 +232,24 @@ class Block:
             "minecraft:block": {
                 "description": {"identifier": f"{self.namespace}:{self.id}"},
                 "components": {},
+                "events": {},
             },
         }
         for component_identifier in self.behavior_components:
             component = self.behavior_components[component_identifier]
             component.write(self.behavior_data)
+
+        for trigger_identifier in self.triggers:
+            print(trigger_identifier)
+            trigger = self.triggers[trigger_identifier]
+            trigger.write(self.behavior_data)
+
+        for event in self.events:
+            event_responses = self.events[event]
+            self.behavior_data["minecraft:block"]["events"][event] = {}
+            for response_identifier in event_responses:
+                response = event_responses[response_identifier]
+                response.write(self.behavior_data)
 
     def generateResourceData(self):
         self.resource_data = {}
@@ -242,6 +278,27 @@ class Block:
                     "addon", f"{component}_description"
                 ],
                 "is_checked": component in self.resource_components,
+            }
+        return back_dict
+
+    def getTriggers(self):
+        back_dict = {}
+        for component in BlockTrigger.triggers:
+            back_dict[component] = {
+                "name": self.addon.MainSystem.lang["addon", f"{component}_name"],
+                "description": self.addon.MainSystem.lang[
+                    "addon", f"{component}_description"
+                ],
+                "is_checked": component in self.triggers,
+            }
+        return back_dict
+
+    def getEvent(self):
+        back_dict = {}
+        for r in BlockEventResponses.responses:
+            back_dict[r] = {
+                "name": self.addon.MainSystem.lang["addon", f"{r}_name"],
+                "description": self.addon.MainSystem.lang["addon", f"{r}_description"],
             }
         return back_dict
 

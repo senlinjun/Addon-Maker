@@ -1,4 +1,4 @@
-// Behavior
+// Behavior-component
 minecraft:collision_box_description=Defines the area of the block that collides with entities. If set to true, default values are used. If set to false, the block's collision with entities is disabled. If this component is omitted, default values are used.
 minecraft:collision_box_name=Collision Box
 minecraft:collision_box_enable=Enable
@@ -67,3 +67,27 @@ carried_textures_name=Carried Textures
 carried_textures_description=Define the texture of the block in the inventory
 name_name=Name of the block
 name_description=Set the language file for the block
+// Behavior_event
+condition=Condition
+event = Event
+target=Target
+minecraft:on_fall_on_name=On Fall On
+minecraft:on_fall_on_description=An Event Trigger for when an actor falls and lands on the block.
+minecraft:on_fall_on_min_fall_distance=Min Fall Distance
+minecraft:on_interact_name=On Interact
+minecraft:on_interact_description=An Event Trigger for when an actor interacts with a block.
+minecraft:on_placed_name=On Placed
+minecraft:on_placed_description=An Event Trigger for when an actor places a block in the world.
+minecraft:on_player_destroyed_name=On Player Destroyed
+minecraft:on_player_destroyed_description=An Event Trigger for when an actor, that is tagged as a player, destroys a block.
+minecraft:on_player_placing_name=On Player Placing
+minecraft:on_player_placing_description=An Event Trigger for when an actor, that is tagged as a player, places a block in the world.
+minecraft:on_step_on_name=On Step On
+minecraft:on_step_on_description=An Event Trigger for when an actor steps on the block.
+minecraft:on_step_off_name=On Step Off
+minecraft:on_step_off_description=An Event Trigger for when an actor steps on the block.
+add_mob_effect_name=Add Mob Effect
+add_mob_effect_description=Apply mob effect to a target
+add_mob_effect_amplifier=The amplifier for the mob effect
+add_mob_effect_duration=The duration of the mob effect
+add_mob_effect_effect=The mob effect to apply

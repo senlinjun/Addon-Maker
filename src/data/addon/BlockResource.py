@@ -5,7 +5,7 @@ import json, lib
 class Sound(BasicComponent):
     def __init__(self, content, ui_system):
         super(Sound, self).__init__("sound", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.sounds = []
         with open("./data/addon/sounds.json", "r") as f:
             self.sounds = json.load(f)
@@ -30,7 +30,7 @@ class Sound(BasicComponent):
 class Isotropic(BasicComponent):
     def __init__(self, content, ui_system):
         super(Isotropic, self).__init__("isotropic", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.ways = {"down": False, "up": False}
         self.side = {"east": False, "north": False, "south": False, "west": False}
         self.select_all = 0
@@ -151,7 +151,7 @@ class Isotropic(BasicComponent):
 class BrightnessGamma(BasicComponent):
     def __init__(self, content, ui_system):
         super(BrightnessGamma, self).__init__("brightness_gamma", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.value = 0.0
 
     def parse(self, component_value):
@@ -181,7 +181,7 @@ class BrightnessGamma(BasicComponent):
 class Textures(BasicComponent):
     def __init__(self, content, ui_system):
         super(Textures, self).__init__("textures", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.textures = {
             "up": self.lang["addon", "textures_none"],
             "down": self.lang["addon", "textures_none"],
@@ -325,7 +325,7 @@ class Textures(BasicComponent):
 class CarriedTextures(BasicComponent):
     def __init__(self, content, ui_system):
         super(CarriedTextures, self).__init__("carried_textures", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.texture = self.lang["addon", "texture_none"]
 
     def parse(self, component_value):
@@ -360,7 +360,7 @@ class CarriedTextures(BasicComponent):
 class Name(BasicComponent):
     def __init__(self, content, ui_system):
         super(Name, self).__init__("name", content, ui_system)
-        self.lang = self.content.addon.MainSystem.lang
+
         self.name = ""
 
     def parse(self, component_value):

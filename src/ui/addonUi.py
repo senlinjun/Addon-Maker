@@ -136,6 +136,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setObjectName("verticalLayout_8")
         self.data_tab = QtWidgets.QTabWidget(self.centralwidget)
         self.data_tab.setObjectName("data_tab")
+        self.component = QtWidgets.QWidget()
+        self.component.setObjectName("component")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.component)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.component_tab = QtWidgets.QTabWidget(self.component)
+        self.component_tab.setObjectName("component_tab")
         self.behavior = QtWidgets.QWidget()
         self.behavior.setObjectName("behavior")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.behavior)
@@ -144,7 +150,7 @@ class Ui_MainWindow(object):
         self.behavior_scrollArea.setWidgetResizable(False)
         self.behavior_scrollArea.setObjectName("behavior_scrollArea")
         self.behavior_scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.behavior_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 650, 584))
+        self.behavior_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 630, 530))
         self.behavior_scrollAreaWidgetContents.setObjectName(
             "behavior_scrollAreaWidgetContents"
         )
@@ -154,7 +160,7 @@ class Ui_MainWindow(object):
         self.behavior_layout.setObjectName("behavior_layout")
         self.behavior_scrollArea.setWidget(self.behavior_scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.behavior_scrollArea, 0, 0, 1, 1)
-        self.data_tab.addTab(self.behavior, "")
+        self.component_tab.addTab(self.behavior, "")
         self.resource = QtWidgets.QWidget()
         self.resource.setObjectName("resource")
         self.gridLayout = QtWidgets.QGridLayout(self.resource)
@@ -163,7 +169,7 @@ class Ui_MainWindow(object):
         self.resource_scrollArea.setWidgetResizable(False)
         self.resource_scrollArea.setObjectName("resource_scrollArea")
         self.resource_scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.resource_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 650, 584))
+        self.resource_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 630, 530))
         self.resource_scrollAreaWidgetContents.setObjectName(
             "resource_scrollAreaWidgetContents"
         )
@@ -173,7 +179,53 @@ class Ui_MainWindow(object):
         self.resource_layout.setObjectName("resource_layout")
         self.resource_scrollArea.setWidget(self.resource_scrollAreaWidgetContents)
         self.gridLayout.addWidget(self.resource_scrollArea, 0, 0, 1, 1)
-        self.data_tab.addTab(self.resource, "")
+        self.component_tab.addTab(self.resource, "")
+        self.gridLayout_4.addWidget(self.component_tab, 0, 0, 1, 1)
+        self.data_tab.addTab(self.component, "")
+        self.event_response = QtWidgets.QWidget()
+        self.event_response.setObjectName("event_response")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.event_response)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.event_tab = QtWidgets.QTabWidget(self.event_response)
+        self.event_tab.setObjectName("event_tab")
+        self.Trigger = QtWidgets.QWidget()
+        self.Trigger.setObjectName("Trigger")
+        self.gridLayout_6 = QtWidgets.QGridLayout(self.Trigger)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.trigger_scrollArea = QtWidgets.QScrollArea(self.Trigger)
+        self.trigger_scrollArea.setWidgetResizable(False)
+        self.trigger_scrollArea.setObjectName("trigger_scrollArea")
+        self.trigger_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.trigger_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 630, 530))
+        self.trigger_scrollAreaWidgetContents.setObjectName(
+            "trigger_scrollAreaWidgetContents"
+        )
+        self.trigger_layout = QtWidgets.QVBoxLayout(
+            self.trigger_scrollAreaWidgetContents
+        )
+        self.trigger_layout.setObjectName("trigger_layout")
+        self.trigger_scrollArea.setWidget(self.trigger_scrollAreaWidgetContents)
+        self.gridLayout_6.addWidget(self.trigger_scrollArea, 0, 0, 1, 1)
+        self.event_tab.addTab(self.Trigger, "")
+        self.event_responses = QtWidgets.QWidget()
+        self.event_responses.setObjectName("event_responses")
+        self.gridLayout_7 = QtWidgets.QGridLayout(self.event_responses)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.event_scrollArea = QtWidgets.QScrollArea(self.event_responses)
+        self.event_scrollArea.setWidgetResizable(False)
+        self.event_scrollArea.setObjectName("event_scrollArea")
+        self.event_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.event_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 630, 530))
+        self.event_scrollAreaWidgetContents.setObjectName(
+            "event_scrollAreaWidgetContents"
+        )
+        self.event_layout = QtWidgets.QVBoxLayout(self.event_scrollAreaWidgetContents)
+        self.event_layout.setObjectName("event_layout")
+        self.event_scrollArea.setWidget(self.event_scrollAreaWidgetContents)
+        self.gridLayout_7.addWidget(self.event_scrollArea, 0, 0, 1, 1)
+        self.event_tab.addTab(self.event_responses, "")
+        self.gridLayout_5.addWidget(self.event_tab, 0, 0, 1, 1)
+        self.data_tab.addTab(self.event_response, "")
         self.verticalLayout_8.addWidget(self.data_tab)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -182,6 +234,7 @@ class Ui_MainWindow(object):
         )
         self.horizontalLayout_2.addItem(spacerItem2)
         self.modifyComponents = QtWidgets.QToolButton(self.centralwidget)
+        self.modifyComponents.setEnabled(True)
         self.modifyComponents.setObjectName("modifyComponents")
         self.horizontalLayout_2.addWidget(self.modifyComponents)
         self.verticalLayout_8.addLayout(self.horizontalLayout_2)
@@ -221,6 +274,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.content_tab.setCurrentIndex(0)
         self.data_tab.setCurrentIndex(0)
+        self.component_tab.setCurrentIndex(0)
+        self.event_tab.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -252,11 +307,27 @@ class Ui_MainWindow(object):
         )
         self.import_button.setText(_translate("MainWindow", "+"))
         self.delete_button.setText(_translate("MainWindow", "-"))
-        self.data_tab.setTabText(
-            self.data_tab.indexOf(self.behavior), _translate("MainWindow", "behavior")
+        self.component_tab.setTabText(
+            self.component_tab.indexOf(self.behavior),
+            _translate("MainWindow", "behavior"),
+        )
+        self.component_tab.setTabText(
+            self.component_tab.indexOf(self.resource),
+            _translate("MainWindow", "resource"),
         )
         self.data_tab.setTabText(
-            self.data_tab.indexOf(self.resource), _translate("MainWindow", "resource")
+            self.data_tab.indexOf(self.component), _translate("MainWindow", "Component")
+        )
+        self.event_tab.setTabText(
+            self.event_tab.indexOf(self.Trigger), _translate("MainWindow", "Trigger")
+        )
+        self.event_tab.setTabText(
+            self.event_tab.indexOf(self.event_responses),
+            _translate("MainWindow", "Event Responses"),
+        )
+        self.data_tab.setTabText(
+            self.data_tab.indexOf(self.event_response),
+            _translate("MainWindow", "Event"),
         )
         self.modifyComponents.setText(_translate("MainWindow", "..."))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
