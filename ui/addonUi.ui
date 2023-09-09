@@ -202,51 +202,129 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="behavior">
+        <widget class="QWidget" name="component">
          <attribute name="title">
-          <string>behavior</string>
+          <string>Component</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
+         <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
-           <widget class="QScrollArea" name="behavior_scrollArea">
-            <property name="widgetResizable">
-             <bool>false</bool>
+           <widget class="QTabWidget" name="component_tab">
+            <property name="currentIndex">
+             <number>0</number>
             </property>
-            <widget class="QWidget" name="behavior_scrollAreaWidgetContents">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>650</width>
-               <height>584</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="behavior_layout"/>
+            <widget class="QWidget" name="behavior">
+             <attribute name="title">
+              <string>behavior</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0">
+               <widget class="QScrollArea" name="behavior_scrollArea">
+                <property name="widgetResizable">
+                 <bool>false</bool>
+                </property>
+                <widget class="QWidget" name="behavior_scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>630</width>
+                   <height>530</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="behavior_layout"/>
+                </widget>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="resource">
+             <attribute name="title">
+              <string>resource</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QScrollArea" name="resource_scrollArea">
+                <property name="widgetResizable">
+                 <bool>false</bool>
+                </property>
+                <widget class="QWidget" name="resource_scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>630</width>
+                   <height>530</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="resource_layout"/>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </widget>
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="resource">
+        <widget class="QWidget" name="event_response">
          <attribute name="title">
-          <string>resource</string>
+          <string>Event</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0">
-           <widget class="QScrollArea" name="resource_scrollArea">
-            <property name="widgetResizable">
-             <bool>false</bool>
+           <widget class="QTabWidget" name="event_tab">
+            <property name="currentIndex">
+             <number>0</number>
             </property>
-            <widget class="QWidget" name="resource_scrollAreaWidgetContents">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>650</width>
-               <height>584</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="resource_layout"/>
+            <widget class="QWidget" name="Trigger">
+             <attribute name="title">
+              <string>Trigger</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="0">
+               <widget class="QScrollArea" name="trigger_scrollArea">
+                <property name="widgetResizable">
+                 <bool>false</bool>
+                </property>
+                <widget class="QWidget" name="trigger_scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>630</width>
+                   <height>530</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="trigger_layout"/>
+                </widget>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="event_responses">
+             <attribute name="title">
+              <string>Event Responses</string>
+             </attribute>
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QScrollArea" name="event_scrollArea">
+                <property name="widgetResizable">
+                 <bool>false</bool>
+                </property>
+                <widget class="QWidget" name="event_scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>630</width>
+                   <height>530</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="event_layout"/>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </widget>
           </item>
@@ -271,6 +349,9 @@
         </item>
         <item>
          <widget class="QToolButton" name="modifyComponents">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>...</string>
           </property>
