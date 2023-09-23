@@ -1,5 +1,5 @@
-import os, json
-from PyQt5 import QtWidgets
+import os, json, uiSystem
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 
@@ -60,6 +60,8 @@ def getWidgetValue(widget):
         if state == Qt.PartiallyChecked:
             return 1
         return 2
+    if isinstance(widget, ListEditButton):
+        return widget.list_
 
 
 class Language:
@@ -123,3 +125,19 @@ def readDataFromFile(filename):
                 line = line[:-1]
             key, value = line.split("=")
             yield key, value
+
+
+class ListEditButton(QtWidgets.QPushButton):
+    def __init__(self, parent):
+        super(ListEditButton, self).__init__(parent)
+        self.list_ = []
+
+    def bind(self, callback):
+        self.clicked.connect(lambda: uiSystem.AskList("List", self.list_, callback))
+
+
+class LockHorizontalScrollArea(QtWidgets.QScrollArea):
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        self.widget().setGeometry(
+            0, 0, a0.size().width(), self.widget().size().height()
+        )

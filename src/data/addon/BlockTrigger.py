@@ -49,6 +49,7 @@ class BasicTrigger(BasicComponent):
             event = ""
         self.event = event
         self.target = lib.getWidgetValue(ui_dict[self.lang["addon", "target"]])
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class OnFallOn(BasicTrigger):
@@ -80,10 +81,10 @@ class OnFallOn(BasicTrigger):
 
     def getUiDict(self):
         events = [event for event in self.content.events.keys()]
-        events.append(self.lang["addon","none"])
+        events.append(self.lang["addon", "none"])
         event = self.event
         if self.event == "":
-            event = self.lang["addon","none"]
+            event = self.lang["addon", "none"]
         return {
             self.lang["addon", "condition"]: (self.condition, "str", None),
             self.lang["addon", "event"]: (event, "combobox", events),
@@ -98,13 +99,14 @@ class OnFallOn(BasicTrigger):
     def parseFromUi(self, ui_dict):
         self.condition = lib.getWidgetValue(ui_dict[self.lang["addon", "condition"]])
         event = lib.getWidgetValue(ui_dict[self.lang["addon", "event"]])
-        if event == self.lang["addon","none"]:
+        if event == self.lang["addon", "none"]:
             event = ""
         self.event = event
         self.target = lib.getWidgetValue(ui_dict[self.lang["addon", "target"]])
         self.min_fall_distance = lib.getWidgetValue(
             ui_dict[self.lang["addon", "minecraft:on_fall_on_min_fall_distance"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class OnInteract(BasicTrigger):
@@ -186,6 +188,7 @@ class QueuedTicking(BasicTrigger):
         self.condition = lib.getWidgetValue(ui_dict[self.lang["addon", "condition"]])
         self.event = lib.getWidgetValue(ui_dict[self.lang["addon", "event"]])
         self.target = lib.getWidgetValue(ui_dict[self.lang["addon", "target"]])
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 triggers = {

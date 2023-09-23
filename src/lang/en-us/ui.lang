@@ -63,3 +63,4 @@ events=Events
 components=Components
 trigger=Trigger
 event_response=Event Response
+input_event_identifier=Enter the identifier of the event.

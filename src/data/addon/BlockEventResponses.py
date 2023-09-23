@@ -8,7 +8,9 @@ class BasicEventResponse(BasicComponent):
         self.event = event
 
     def write(self, pack_dict):
-        pack_dict["minecraft:block"]["events"][self.event][self.identifier] = self.generate()
+        pack_dict["minecraft:block"]["events"][self.event][
+            self.identifier
+        ] = self.generate()
 
 
 class AddMobEffect(BasicEventResponse):
@@ -59,9 +61,8 @@ class AddMobEffect(BasicEventResponse):
         self.effect = lib.getWidgetValue(
             ui_dict[self.lang["addon", "add_mob_effect_effect"]]
         )
-        self.target = lib.getWidgetValue(
-            ui_dict[self.lang["addon", "target"]]
-        )
+        self.target = lib.getWidgetValue(ui_dict[self.lang["addon", "target"]])
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 responses = {"add_mob_effect": AddMobEffect}

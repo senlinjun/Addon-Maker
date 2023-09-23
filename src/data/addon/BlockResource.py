@@ -25,6 +25,7 @@ class Sound(BasicComponent):
 
     def parseFromUi(self, ui_dict):
         self.sound = lib.getWidgetValue(ui_dict[self.lang["addon", "sound_name"]])
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Isotropic(BasicComponent):
@@ -146,6 +147,7 @@ class Isotropic(BasicComponent):
             for s in self.side:
                 self.side[s] = bool(side_value)
             return
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class BrightnessGamma(BasicComponent):
@@ -176,6 +178,7 @@ class BrightnessGamma(BasicComponent):
         self.value = lib.getWidgetValue(
             ui_dict[self.lang["addon", "brightness_gamma_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Textures(BasicComponent):
@@ -320,6 +323,7 @@ class Textures(BasicComponent):
                                     self.lang["addon", face]
                                 ]
                             )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class CarriedTextures(BasicComponent):
@@ -355,6 +359,7 @@ class CarriedTextures(BasicComponent):
         self.texture = lib.getWidgetValue(
             ui_dict[self.lang["addon", "carried_textures_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Name(BasicComponent):
@@ -377,6 +382,7 @@ class Name(BasicComponent):
 
     def parseFromUi(self, ui_dict):
         self.name = lib.getWidgetValue(ui_dict[self.lang["addon", "name_name"]])
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 components = {

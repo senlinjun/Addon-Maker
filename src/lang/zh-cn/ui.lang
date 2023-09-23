@@ -63,3 +63,4 @@ events=事件
 components=组件
 trigger=触发器
 event_response=响应事件
+input_event_identifier=输入该事件的标识符

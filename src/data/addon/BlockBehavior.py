@@ -101,6 +101,7 @@ class CollisionBox(BasicComponent):
                 self.size_y = -self.origin_y
             if self.origin_z + self.size_z < -8:
                 self.size_z = -8 - self.origin_z
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class DestructibleByExplosion(BasicComponent):
@@ -173,6 +174,7 @@ class DestructibleByExplosion(BasicComponent):
                         ]
                     ]
                 )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class DestructibleByMining(BasicComponent):
@@ -238,6 +240,7 @@ class DestructibleByMining(BasicComponent):
                         self.lang["addon", "minecraft:destructible_by_mining_seconds"]
                     ]
                 )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class DisplayName(BasicComponent):
@@ -264,6 +267,7 @@ class DisplayName(BasicComponent):
         self.name = lib.getWidgetValue(
             ui_dict[self.lang["addon", "minecraft:display_name_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Flammable(BasicComponent):
@@ -343,6 +347,7 @@ class Flammable(BasicComponent):
                     self.lang["addon", "minecraft:flammable_destroy_chance_modifier"]
                 ]
             )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Friction(BasicComponent):
@@ -373,6 +378,7 @@ class Friction(BasicComponent):
         self.friction = lib.getWidgetValue(
             ui_dict[self.lang["addon", "minecraft:friction_value"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class MapColor(BasicComponent):
@@ -396,7 +402,10 @@ class MapColor(BasicComponent):
         pack_dict["minecraft:block"]["components"][self.identifier] = self.generate()
 
     def parseFromUi(self, ui_dict):
-        self.color = lib.getWidgetValue(self.lang["addon", "minecraft:map_color_color"])
+        self.color = lib.getWidgetValue(
+            ui_dict[self.lang["addon", "minecraft:map_color_color"]]
+        )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class LightDampening(BasicComponent):
@@ -429,6 +438,7 @@ class LightDampening(BasicComponent):
         self.value = lib.getWidgetValue(
             ui_dict[self.lang["addon", "minecraft:light_dampening_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class LightEmission(BasicComponent):
@@ -461,6 +471,7 @@ class LightEmission(BasicComponent):
         self.value = lib.getWidgetValue(
             ui_dict[self.lang["addon", "minecraft:light_emission_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class SelectionBox(BasicComponent):
@@ -562,6 +573,7 @@ class SelectionBox(BasicComponent):
                 self.size_y = -self.origin_y
             if self.origin_z + self.size_z < -8:
                 self.size_z = -8 - self.origin_z
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class IsExperimental(BasicComponent):
@@ -586,6 +598,7 @@ class IsExperimental(BasicComponent):
         self.value = lib.getWidgetValue(
             ui_dict[self.lang["addon", "is_experimental_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 class Properties(BasicComponent):
@@ -624,7 +637,8 @@ class Properties(BasicComponent):
     def parseFromUi(self, ui_dict):
         ui_dict.pop(self.lang["addon", "properties_operate"])
         for list_name in ui_dict:
-            self.properties[list_name] = ui_dict[list_name].component_list
+            self.properties[list_name] = lib.getWidgetValue(ui_dict[list_name])
+        self.updateUi(ui_dict, self.getUiDict())
 
     def add(self):
         ask_new_property = QInputDialog.getText(
@@ -700,6 +714,7 @@ class RegisterToCreativeMenu(BasicComponent):
         self.value = lib.getWidgetValue(
             ui_dict[self.lang["addon", "register_to_creative_menu_name"]]
         )
+        self.updateUi(ui_dict, self.getUiDict())
 
 
 components = {
